@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Perfinion's Blog</title><link>https://blog.perfinion.com/</link><description></description><atom:link href="https://blog.perfinion.com/tag/misc/feed/rss.xml" rel="self"></atom:link><lastBuildDate>Mon, 01 Aug 2016 22:00:00 +0800</lastBuildDate><item><title>Hello World</title><link>https://blog.perfinion.com/2016/08/hello-world/</link><description>&lt;p&gt;Hello World. I've been meaning to start a blog for a while but never got around
+to it. Russell Coker posted on the SELinux mailing list yesterday asking about
+Planet SELinux so I figured now is as good a time as any for starting one.&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Jason Zaman</dc:creator><pubDate>Mon, 01 Aug 2016 22:00:00 +0800</pubDate><guid>tag:blog.perfinion.com,2016-08-01:2016/08/hello-world/</guid><category>misc</category></item></channel></rss>
