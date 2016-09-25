@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" prefix="og: http://ogp.me/ns# fb: https://www.facebook.com/2008/fbml">
 <head>
-    <title>Categories - Perfinion's Blog</title>
+    <title>SELinux desktop profile in Gentoo - Perfinion's Blog</title>
     <!-- Using the latest rendering mode for IE -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta charset="utf-8">
@@ -9,15 +9,21 @@
 
 
 
+<link rel="canonical" href="http://blog.perfinion.com/2016/09/selinux-desktop-profile/">
 
         <meta name="author" content="Jason Zaman" />
+        <meta name="keywords" content="security" />
+        <meta name="description" content="Making a gentoo desktop/selinux profile" />
 
-    <!-- Open Graph tags -->
         <meta property="og:site_name" content="Perfinion's Blog" />
-        <meta property="og:type" content="website"/>
-        <meta property="og:title" content="Perfinion's Blog"/>
-        <meta property="og:url" content="http://blog.perfinion.com"/>
-        <meta property="og:description" content="Perfinion's Blog"/>
+        <meta property="og:type" content="article"/>
+        <meta property="og:title" content="SELinux desktop profile in Gentoo"/>
+        <meta property="og:url" content="http://blog.perfinion.com/2016/09/selinux-desktop-profile/"/>
+        <meta property="og:description" content="Making a gentoo desktop/selinux profile"/>
+        <meta property="article:published_time" content="2016-09-21" />
+            <meta property="article:section" content="Security" />
+            <meta property="article:tag" content="security" />
+            <meta property="article:author" content="Jason Zaman" />
 
 
     <!-- Bootstrap -->
@@ -34,6 +40,8 @@
               title="Perfinion's Blog RSS Feed"/>
 
 
+        <link href="http://blog.perfinion.com/category/security/feed/atom.xml" type="application/atom+xml" rel="alternate"
+              title="Perfinion's Blog Security ATOM Feed"/>
 
 </head>
 <body>
@@ -55,7 +63,7 @@ Perfinion's Blog            </a>
                         <li >
                             <a href="http://blog.perfinion.com/category/misc">Misc</a>
                         </li>
-                        <li >
+                        <li class="active">
                             <a href="http://blog.perfinion.com/category/security">Security</a>
                         </li>
             </ul>
@@ -70,37 +78,86 @@ Perfinion's Blog            </a>
 <div class="container">
     <div class="row">
         <div class="col-sm-9">
-    <section id="categories">
-        <h1>All Categories for Perfinion's Blog</h1>
-        <div class="panel-group" id="accordion">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h4 class="panel-title">
-                        <a data-toggle="collapse" data-parent="#accordion" href="#collapse-misc">Misc <span class="badge pull-right">1</span></a>
-                    </h4>
-                </div>
-                <div id="collapse-misc" class="panel-collapse collapse">
+    <section id="content">
+        <article>
+            <header class="page-header">
+                <h1>
+                    <a href="http://blog.perfinion.com/2016/09/selinux-desktop-profile/"
+                       rel="bookmark"
+                       title="Permalink to SELinux desktop profile in Gentoo">
+                        SELinux desktop profile in Gentoo
+                    </a>
+                </h1>
+            </header>
+            <div class="entry-content">
+                <div class="panel">
                     <div class="panel-body">
-                        <p><span class="categories-timestamp"><time datetime="2016-08-01T22:00:00+08:00">Mon 01 August 2016</time></span> <a href="http://blog.perfinion.com/2016/08/hello-world/">Hello World</a></p>
-                    </div>
-                </div>
-            </div>
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h4 class="panel-title">
-                        <a data-toggle="collapse" data-parent="#accordion" href="#collapse-security">Security <span class="badge pull-right">2</span></a>
-                    </h4>
-                </div>
-                <div id="collapse-security" class="panel-collapse collapse">
-                    <div class="panel-body">
-                        <p><span class="categories-timestamp"><time datetime="2016-09-21T12:00:00+08:00">Wed 21 September 2016</time></span> <a href="http://blog.perfinion.com/2016/09/selinux-desktop-profile/">SELinux desktop profile in Gentoo</a></p>
-                        <p><span class="categories-timestamp"><time datetime="2016-08-30T12:00:00+08:00">Tue 30 August 2016</time></span> <a href="http://blog.perfinion.com/2016/08/trusted-boot-part1/">Trusted Boot Part 1</a></p>
-                    </div>
-                </div>
-            </div>
-        </div>
+<footer class="post-info">
+    <span class="label label-default">Date</span>
+    <span class="published">
+        <i class="fa fa-calendar"></i><time datetime="2016-09-21T12:00:00+08:00"> Wed 21 September 2016</time>
+    </span>
 
+
+
+
+
+<span class="label label-default">Tags</span>
+	<a href="http://blog.perfinion.com/tag/security/">security</a>
+    
+</footer><!-- /.post-info -->                    </div>
+                </div>
+                <p>SELinux desktop profiles came up on IRC earlier and I thought it might be a good idea to make a post about.
+Currently in gentoo there are only two selinux profiles:</p>
+<div class="highlight"><pre><span></span>meriadoc ~ # eselect profile list
+Available profile symlink targets:
+  [1]   default/linux/amd64/13.0
+  [2]   default/linux/amd64/13.0/selinux
+  [3]   default/linux/amd64/13.0/desktop
+  [4]   default/linux/amd64/13.0/desktop/gnome
+  [5]   default/linux/amd64/13.0/desktop/gnome/systemd
+  [6]   default/linux/amd64/13.0/desktop/kde
+  [7]   default/linux/amd64/13.0/desktop/kde/systemd
+  [8]   default/linux/amd64/13.0/desktop/plasma
+  [9]   default/linux/amd64/13.0/desktop/plasma/systemd
+  [10]  default/linux/amd64/13.0/developer
+  [11]  default/linux/amd64/13.0/no-multilib
+  [12]  default/linux/amd64/13.0/systemd
+  [13]  default/linux/amd64/13.0/x32
+  [14]  hardened/linux/amd64
+  [15]  hardened/linux/amd64/selinux *
+  [16]  hardened/linux/amd64/no-multilib
+  [17]  hardened/linux/amd64/no-multilib/selinux
+  [18]  hardened/linux/amd64/x32
+  [19]  hardened/linux/musl/amd64
+  [20]  hardened/linux/musl/amd64/x32
+  [21]  default/linux/uclibc/amd64
+  [22]  hardened/linux/uclibc/amd64
+</pre></div>
+
+
+<p>How would one go about having both default/linux/amd64/13.0/desktop and
+selinux? We <em>could</em> add selinux versions of every single other profile but that
+would very quickly get unmanageable. Turns out making a custom one is pretty
+simple:</p>
+<div class="highlight"><pre><span></span>unlink /etc/portage/make.profile
+mkdir /etc/portage/make.profile
+
+<span class="nb">echo</span> <span class="m">6</span> &gt; /etc/portage/make.profile/eapi
+<span class="nb">echo</span> <span class="s2">&quot;gentoo:default/linux/amd64/13.0/desktop&quot;</span> &gt; /etc/portage/make.profile/parent
+<span class="nb">echo</span> <span class="s2">&quot;gentoo:features/selinux&quot;</span> &gt; /etc/portage/make.profile/parent
+</pre></div>
+
+
+<p>The parent file will tell portage to first use the desktop profile and then use
+the selinux feature on top. It is important that the selinux line comes last
+since it needs to override several things that might be set earlier in the
+desktop profile.</p>
+            </div>
+            <!-- /.entry-content -->
+        </article>
     </section>
+
         </div>
         <div class="col-sm-3" id="sidebar">
             <aside>

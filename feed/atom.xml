@@ -1,5 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Perfinion's Blog</title><link href="http://blog.perfinion.com/" rel="alternate"></link><link href="http://blog.perfinion.com/feed/atom.xml" rel="self"></link><id>http://blog.perfinion.com/</id><updated>2016-08-30T12:00:00+08:00</updated><entry><title>Trusted Boot Part 1</title><link href="http://blog.perfinion.com/2016/08/trusted-boot-part1/" rel="alternate"></link><updated>2016-08-30T12:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2016-08-30:2016/08/trusted-boot-part1/</id><summary type="html">&lt;p&gt;I finally managed to get tboot working in a way that makes sense to me. For
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Perfinion's Blog</title><link href="http://blog.perfinion.com/" rel="alternate"></link><link href="http://blog.perfinion.com/feed/atom.xml" rel="self"></link><id>http://blog.perfinion.com/</id><updated>2016-09-21T12:00:00+08:00</updated><entry><title>SELinux desktop profile in Gentoo</title><link href="http://blog.perfinion.com/2016/09/selinux-desktop-profile/" rel="alternate"></link><updated>2016-09-21T12:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2016-09-21:2016/09/selinux-desktop-profile/</id><summary type="html">&lt;p&gt;SELinux desktop profiles came up on IRC earlier and I thought it might be a good idea to make a post about.
+Currently in gentoo there are only two selinux profiles:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;meriadoc ~ # eselect profile list
+Available profile symlink targets:
+  [1]   default/linux/amd64/13.0
+  [2]   default/linux/amd64/13.0/selinux
+  [3]   default/linux/amd64/13.0/desktop
+  [4]   default/linux/amd64/13.0/desktop/gnome
+  [5]   default/linux/amd64/13.0/desktop/gnome/systemd
+  [6]   default/linux/amd64/13.0/desktop/kde
+  [7]   default/linux/amd64/13.0/desktop/kde/systemd
+  [8]   default/linux/amd64/13.0/desktop/plasma
+  [9]   default/linux/amd64/13.0/desktop/plasma/systemd
+  [10]  default/linux/amd64/13.0/developer
+  [11]  default/linux/amd64/13.0/no-multilib
+  [12]  default/linux/amd64/13.0/systemd
+  [13]  default/linux/amd64/13.0/x32
+  [14]  hardened/linux/amd64
+  [15]  hardened/linux/amd64/selinux *
+  [16]  hardened/linux/amd64/no-multilib
+  [17]  hardened/linux/amd64/no-multilib/selinux
+  [18]  hardened/linux/amd64/x32
+  [19]  hardened/linux/musl/amd64
+  [20]  hardened/linux/musl/amd64/x32
+  [21]  default/linux/uclibc/amd64
+  [22]  hardened/linux/uclibc/amd64
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;How would one go about having both default/linux/amd64/13.0/desktop and
+selinux? We &lt;em&gt;could&lt;/em&gt; add selinux versions of every single other profile but that
+would very quickly get unmanageable. Turns out making a custom one is pretty
+simple:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;unlink /etc/portage/make.profile
+mkdir /etc/portage/make.profile
+
+&lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="m"&gt;6&lt;/span&gt; &amp;gt; /etc/portage/make.profile/eapi
+&lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;gentoo:default/linux/amd64/13.0/desktop&amp;quot;&lt;/span&gt; &amp;gt; /etc/portage/make.profile/parent
+&lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;gentoo:features/selinux&amp;quot;&lt;/span&gt; &amp;gt; /etc/portage/make.profile/parent
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The parent file will tell portage to first use the desktop profile and then use
+the selinux feature on top. It is important that the selinux line comes last
+since it needs to override several things that might be set earlier in the
+desktop profile.&lt;/p&gt;</summary><category term="security"></category></entry><entry><title>Trusted Boot Part 1</title><link href="http://blog.perfinion.com/2016/08/trusted-boot-part1/" rel="alternate"></link><updated>2016-08-30T12:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2016-08-30:2016/08/trusted-boot-part1/</id><summary type="html">&lt;p&gt;I finally managed to get tboot working in a way that makes sense to me. For
 those unfamiliar, tboot uses Intel's Trusted eXecution Technology to invoke a
 dynamic root of trust and then measure all the components you boot with (eg
 kernel and initrd). What took me ages to figure out was how one can upgrade
