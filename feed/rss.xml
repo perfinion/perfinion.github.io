@@ -1,4 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Perfinion's Blog</title><link>https://blog.perfinion.com/</link><description></description><atom:link href="https://blog.perfinion.com/feed/rss.xml" rel="self"></atom:link><lastBuildDate>Mon, 01 Aug 2016 22:00:00 +0800</lastBuildDate><item><title>Hello World</title><link>https://blog.perfinion.com/2016/08/hello-world/</link><description>&lt;p&gt;Hello World. I've been meaning to start a blog for a while but never got around
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Perfinion's Blog</title><link>http://blog.perfinion.com/</link><description></description><atom:link href="http://blog.perfinion.com/feed/rss.xml" rel="self"></atom:link><lastBuildDate>Tue, 30 Aug 2016 12:00:00 +0800</lastBuildDate><item><title>Trusted Boot Part 1</title><link>http://blog.perfinion.com/2016/08/trusted-boot-part1/</link><description>&lt;p&gt;I finally managed to get tboot working in a way that makes sense to me. For
+those unfamiliar, tboot uses Intel's Trusted eXecution Technology to invoke a
+dynamic root of trust and then measure all the components you boot with (eg
+kernel and initrd). What took me ages to figure out was how one can upgrade
+kernels while keeping this chain working.&lt;/p&gt;
+&lt;p&gt;There are two policies in tboot: Launch Control Policy and Verified Launch
+Policy. LCP is handled by TXT automagically and is used to make sure the
+correct tboot and PCRs are set and either continues boot by executing tboot or
+resets the machine. VLP is where the kernel, initrd and any other components
+are measured and is handled by tboot after the SINIT has happened.&lt;/p&gt;
+&lt;p&gt;The trick I finally figured out is that the policy list needs to be signed with
+your own key.  If the policy unsigned (unfortunately what most documentation
+shows :-() then tboot will verify the kernels and extend the sha1 hash of the
+policy file into PCR 18. This obviously causes problems when upgrading kernels
+because everything changes.&lt;/p&gt;
+&lt;p&gt;The difference with a signed policy is that instead of using the sha1 of the
+policy file itself, tboot will use the sha1 of the signed public key which is
+easily kept the same! hurrah!  Now finally I can update kernels and PCR 18 is
+unchanged so there is no mess with migrating sealed secrets to new, probably
+unknown, PCRs.&lt;/p&gt;
+&lt;p&gt;I have extended genkernel to include all the tools needed to start tcsd and
+tpm_unsealdata and can successfully unseal a secret from the prompt within the
+initrd. Next I need to add the parts to automatically unseal and unlock the
+LUKS drive. There will be another post when that's all working.&lt;/p&gt;
+&lt;p&gt;Here is the Makefile that I used to output and setup my policies:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nv"&gt;KVERS&lt;/span&gt; &lt;span class="o"&gt;:=&lt;/span&gt; &lt;span class="k"&gt;$(&lt;/span&gt;shell readlink /usr/src/linux &lt;span class="p"&gt;|&lt;/span&gt; sed &lt;span class="s1"&gt;&amp;#39;s/^linux-//&amp;#39;&lt;/span&gt;&lt;span class="k"&gt;)&lt;/span&gt;
+&lt;span class="nv"&gt;CMDLINE_TBOOT&lt;/span&gt; &lt;span class="o"&gt;:=&lt;/span&gt; &lt;span class="k"&gt;$(&lt;/span&gt;shell &lt;span class="nb"&gt;source&lt;/span&gt; /etc/default/grub-tboot&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="nv"&gt;$$&lt;/span&gt;&lt;span class="o"&gt;{&lt;/span&gt;GRUB_CMDLINE_TBOOT&lt;span class="o"&gt;}&lt;/span&gt;&lt;span class="k"&gt;)&lt;/span&gt;
+
+&lt;span class="nf"&gt;all&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;list&lt;/span&gt;.&lt;span class="n"&gt;pol&lt;/span&gt; &lt;span class="n"&gt;list&lt;/span&gt;.&lt;span class="n"&gt;data&lt;/span&gt;
+
+&lt;span class="nf"&gt;clean&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+    rm -f list* mle* *.elt vl.pol pcrs.txt
+
+&lt;span class="c"&gt;# Launch Control Policy element for MLE&lt;/span&gt;
+&lt;span class="nf"&gt;mle_hash&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; /&lt;span class="n"&gt;boot&lt;/span&gt;/&lt;span class="n"&gt;tboot&lt;/span&gt;.&lt;span class="n"&gt;gz&lt;/span&gt; /&lt;span class="n"&gt;etc&lt;/span&gt;/&lt;span class="n"&gt;default&lt;/span&gt;/&lt;span class="n"&gt;grub&lt;/span&gt;-&lt;span class="n"&gt;tboot&lt;/span&gt;
+    lcp_mlehash -c &lt;span class="s2"&gt;&amp;quot;&lt;/span&gt;&lt;span class="k"&gt;$(&lt;/span&gt;CMDLINE_TBOOT&lt;span class="k"&gt;)&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;&lt;/span&gt; /boot/tboot.gz &amp;gt; mle_hash
+
+&lt;span class="nf"&gt;mle.elt&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;mle_hash&lt;/span&gt;
+    lcp_crtpolelt --create --ctrl 0x01 --type mle --minver &lt;span class="m"&gt;17&lt;/span&gt; --out mle.elt mle_hash
+
+&lt;span class="c"&gt;# LCP element for pcrs&lt;/span&gt;
+&lt;span class="nf"&gt;pcrs.txt&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; /&lt;span class="n"&gt;sys&lt;/span&gt;/&lt;span class="n"&gt;class&lt;/span&gt;/&lt;span class="n"&gt;tpm&lt;/span&gt;/&lt;span class="n"&gt;tpm&lt;/span&gt;0/&lt;span class="n"&gt;device&lt;/span&gt;/&lt;span class="n"&gt;pcrs&lt;/span&gt;
+    egrep &lt;span class="s2"&gt;&amp;quot;^PCR-00&amp;quot;&lt;/span&gt; /sys/class/tpm/tpm0/device/pcrs &amp;gt; pcrs.txt
+
+&lt;span class="nf"&gt;pconf.elt&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;pcrs&lt;/span&gt;.&lt;span class="n"&gt;txt&lt;/span&gt;
+    lcp_crtpolelt --create --ctrl 0x01 --type pconf --out pconf.elt pcrs.txt
+
+
+&lt;span class="c"&gt;# Make list out of all the policy elements&lt;/span&gt;
+&lt;span class="nf"&gt;list_unsig.lst&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;mle&lt;/span&gt;.&lt;span class="n"&gt;elt&lt;/span&gt; &lt;span class="n"&gt;pconf&lt;/span&gt;.&lt;span class="n"&gt;elt&lt;/span&gt; &lt;span class="n"&gt;vl&lt;/span&gt;.&lt;span class="n"&gt;elt&lt;/span&gt;
+    lcp_crtpollist --create --out list_unsig.lst mle.elt pconf.elt vl.elt
+
+&lt;span class="c"&gt;# Sign the LCP so the pubkey is extended and NVRam is invariant&lt;/span&gt;
+&lt;span class="nf"&gt;list_sig.lst&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;list_unsig&lt;/span&gt;.&lt;span class="n"&gt;lst&lt;/span&gt;
+    cp list_unsig.lst list_sig.lst
+    lcp_crtpollist --sign --pub pubkey.pem --priv privkey.pem --out list_sig.lst
+
+&lt;span class="c"&gt;# Policy type lists need to have both .pol (in NVRAM) and data separately (loaded by grub)&lt;/span&gt;
+&lt;span class="nf"&gt;list.data&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;list_sig&lt;/span&gt;.&lt;span class="n"&gt;lst&lt;/span&gt;
+    lcp_crtpol2 --create --ctrl 0x00 --type list --pol list.pol --data list.data list_sig.lst
+
+&lt;span class="nf"&gt;list.pol&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;list&lt;/span&gt;.&lt;span class="n"&gt;data&lt;/span&gt;
+
+
+&lt;span class="c"&gt;# Verified Launch Policy for tboot to verify kernel+initrd&lt;/span&gt;
+&lt;span class="c"&gt;# ctrl 0x00 means it does not extend module 0 into pcr18&lt;/span&gt;
+&lt;span class="nf"&gt;vl.pol&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; /&lt;span class="n"&gt;boot&lt;/span&gt;/&lt;span class="n"&gt;initramfs&lt;/span&gt;-&lt;span class="n"&gt;genkernel&lt;/span&gt;-&lt;span class="n"&gt;x&lt;/span&gt;86&lt;span class="n"&gt;_&lt;/span&gt;64-&lt;span class="k"&gt;$(&lt;/span&gt;&lt;span class="nv"&gt;KVERS&lt;/span&gt;&lt;span class="k"&gt;)&lt;/span&gt;  /&lt;span class="n"&gt;boot&lt;/span&gt;/&lt;span class="n"&gt;vmlinuz&lt;/span&gt;-&lt;span class="k"&gt;$(&lt;/span&gt;&lt;span class="nv"&gt;KVERS&lt;/span&gt;&lt;span class="k"&gt;)&lt;/span&gt;
+    tb_polgen --create --ctrl 0x00 --type &lt;span class="k"&gt;continue&lt;/span&gt; vl.pol
+    tb_polgen --add --num &lt;span class="m"&gt;0&lt;/span&gt; --pcr &lt;span class="m"&gt;19&lt;/span&gt; --hash image --cmdline &lt;span class="s2"&gt;&amp;quot;root=/dev/mapper/root ro console=ttyS0,115200n8 console=tty0 intel_iommu=on noefi&amp;quot;&lt;/span&gt; --image /boot/vmlinuz-&lt;span class="k"&gt;$(&lt;/span&gt;KVERS&lt;span class="k"&gt;)&lt;/span&gt; vl.pol
+    tb_polgen --add --num &lt;span class="m"&gt;1&lt;/span&gt; --pcr &lt;span class="m"&gt;20&lt;/span&gt; --hash image --cmdline &lt;span class="s2"&gt;&amp;quot;&amp;quot;&lt;/span&gt; --image /boot/initramfs-genkernel-x86_64-&lt;span class="k"&gt;$(&lt;/span&gt;KVERS&lt;span class="k"&gt;)&lt;/span&gt; vl.pol
+
+&lt;span class="nf"&gt;vl.elt&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;vl&lt;/span&gt;.&lt;span class="n"&gt;pol&lt;/span&gt;
+    lcp_crtpolelt --create --ctrl 0x01 --type custom --out vl.elt --uuid tboot vl.pol
+
+
+&lt;span class="c"&gt;# define the indexes in the TPM&lt;/span&gt;
+&lt;span class="nf"&gt;definenv&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+&lt;span class="c"&gt;    # define the error locality&lt;/span&gt;
+    tpmnv_defindex -i 0x20000002 -s &lt;span class="m"&gt;8&lt;/span&gt; -pv &lt;span class="m"&gt;0&lt;/span&gt; -rl 0x07 -wl 0x07 -p &lt;span class="k"&gt;$(&lt;/span&gt;PASSWORD&lt;span class="k"&gt;)&lt;/span&gt; &lt;span class="o"&gt;||&lt;/span&gt; &lt;span class="nb"&gt;true&lt;/span&gt;
+&lt;span class="c"&gt;    # define the tboot verified launch policy locality&lt;/span&gt;
+    tpmnv_defindex -i 0x20000001 -s &lt;span class="m"&gt;512&lt;/span&gt; -pv 0x02 -p &lt;span class="k"&gt;$(&lt;/span&gt;PASSWORD&lt;span class="k"&gt;)&lt;/span&gt; &lt;span class="o"&gt;||&lt;/span&gt; &lt;span class="nb"&gt;true&lt;/span&gt;
+&lt;span class="c"&gt;    # define the TXT launch control policy locality&lt;/span&gt;
+    tpmnv_defindex -i owner -s 0x36 -p &lt;span class="k"&gt;$(&lt;/span&gt;PASSWORD&lt;span class="k"&gt;)&lt;/span&gt; &lt;span class="o"&gt;||&lt;/span&gt; &lt;span class="nb"&gt;true&lt;/span&gt;
+
+
+&lt;span class="c"&gt;# write everything to tpm and /boot&lt;/span&gt;
+&lt;span class="nf"&gt;writelcp&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;list&lt;/span&gt;.&lt;span class="n"&gt;pol&lt;/span&gt;
+    lcp_writepol -i owner -f list.pol -p &lt;span class="k"&gt;$(&lt;/span&gt;PASSWORD&lt;span class="k"&gt;)&lt;/span&gt;
+
+&lt;span class="nf"&gt;writevlp&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;vl&lt;/span&gt;.&lt;span class="n"&gt;pol&lt;/span&gt;
+    lcp_writepol -i 0x20000001 -f vl.pol -p &lt;span class="k"&gt;$(&lt;/span&gt;PASSWORD&lt;span class="k"&gt;)&lt;/span&gt;
+
+&lt;span class="nf"&gt;install&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;writelcp&lt;/span&gt;
+    cp list.data /boot/list.data
+&lt;/pre&gt;&lt;/div&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Jason Zaman</dc:creator><pubDate>Tue, 30 Aug 2016 12:00:00 +0800</pubDate><guid>tag:blog.perfinion.com,2016-08-30:2016/08/trusted-boot-part1/</guid><category>security</category></item><item><title>Hello World</title><link>http://blog.perfinion.com/2016/08/hello-world/</link><description>&lt;p&gt;Hello World. I've been meaning to start a blog for a while but never got around
 to it. Russell Coker posted on the SELinux mailing list yesterday asking about
 Planet SELinux so I figured now is as good a time as any for starting one.&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Jason Zaman</dc:creator><pubDate>Mon, 01 Aug 2016 22:00:00 +0800</pubDate><guid>tag:blog.perfinion.com,2016-08-01:2016/08/hello-world/</guid><category>misc</category></item></channel></rss>

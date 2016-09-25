@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Perfinion's Blog</title><link href="http://blog.perfinion.com/" rel="alternate"></link><link href="http://blog.perfinion.com/feed/atom.xml" rel="self"></link><id>http://blog.perfinion.com/</id><updated>2016-08-30T12:00:00+08:00</updated><entry><title>Trusted Boot Part 1</title><link href="http://blog.perfinion.com/2016/08/trusted-boot-part1/" rel="alternate"></link><updated>2016-08-30T12:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2016-08-30:2016/08/trusted-boot-part1/</id><summary type="html">&lt;p&gt;I finally managed to get tboot working in a way that makes sense to me. For
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Perfinion's Blog</title><link>http://blog.perfinion.com/</link><description></description><atom:link href="http://blog.perfinion.com/category/security/feed/rss.xml" rel="self"></atom:link><lastBuildDate>Tue, 30 Aug 2016 12:00:00 +0800</lastBuildDate><item><title>Trusted Boot Part 1</title><link>http://blog.perfinion.com/2016/08/trusted-boot-part1/</link><description>&lt;p&gt;I finally managed to get tboot working in a way that makes sense to me. For
 those unfamiliar, tboot uses Intel's Trusted eXecution Technology to invoke a
 dynamic root of trust and then measure all the components you boot with (eg
 kernel and initrd). What took me ages to figure out was how one can upgrade
@@ -93,6 +93,4 @@ LUKS drive. There will be another post when that's all working.&lt;/p&gt;
 
 &lt;span class="nf"&gt;install&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;writelcp&lt;/span&gt;
     cp list.data /boot/list.data
-&lt;/pre&gt;&lt;/div&gt;</summary><category term="security"></category></entry><entry><title>Hello World</title><link href="http://blog.perfinion.com/2016/08/hello-world/" rel="alternate"></link><updated>2016-08-01T22:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2016-08-01:2016/08/hello-world/</id><summary type="html">&lt;p&gt;Hello World. I've been meaning to start a blog for a while but never got around
-to it. Russell Coker posted on the SELinux mailing list yesterday asking about
-Planet SELinux so I figured now is as good a time as any for starting one.&lt;/p&gt;</summary><category term="misc"></category></entry></feed>
+&lt;/pre&gt;&lt;/div&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Jason Zaman</dc:creator><pubDate>Tue, 30 Aug 2016 12:00:00 +0800</pubDate><guid>tag:blog.perfinion.com,2016-08-30:2016/08/trusted-boot-part1/</guid><category>security</category></item></channel></rss>

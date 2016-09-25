@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: http://ogp.me/ns# fb: https://www.facebook.com/2008/fbml">
+<head>
+    <title>Trusted Boot Part 1 - Perfinion's Blog</title>
+    <!-- Using the latest rendering mode for IE -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+
+<link rel="canonical" href="http://blog.perfinion.com/2016/08/trusted-boot-part1/">
+
+        <meta name="author" content="Jason Zaman" />
+        <meta name="keywords" content="security" />
+        <meta name="description" content="I finally got tboot working on my laptop and can upgrade kernels while keeping the PCRs the same." />
+
+        <meta property="og:site_name" content="Perfinion's Blog" />
+        <meta property="og:type" content="article"/>
+        <meta property="og:title" content="Trusted Boot Part 1"/>
+        <meta property="og:url" content="http://blog.perfinion.com/2016/08/trusted-boot-part1/"/>
+        <meta property="og:description" content="I finally got tboot working on my laptop and can upgrade kernels while keeping the PCRs the same."/>
+        <meta property="article:published_time" content="2016-08-30" />
+            <meta property="article:section" content="Security" />
+            <meta property="article:tag" content="security" />
+            <meta property="article:author" content="Jason Zaman" />
+
+
+    <!-- Bootstrap -->
+        <link rel="stylesheet" href="http://blog.perfinion.com/theme/css/bootstrap.min.css" type="text/css"/>
+    <link href="http://blog.perfinion.com/theme/css/font-awesome.min.css" rel="stylesheet">
+
+    <link href="http://blog.perfinion.com/theme/css/pygments/native.css" rel="stylesheet">
+    <link rel="stylesheet" href="http://blog.perfinion.com/theme/css/style.css" type="text/css"/>
+
+        <link href="http://blog.perfinion.com/feed/all.atom.xml" type="application/atom+xml" rel="alternate"
+              title="Perfinion's Blog ATOM Feed"/>
+
+        <link href="http://blog.perfinion.com/feed/all.rss.xml" type="application/rss+xml" rel="alternate"
+              title="Perfinion's Blog RSS Feed"/>
+
+
+        <link href="http://blog.perfinion.com/category/security/feed/atom.xml" type="application/atom+xml" rel="alternate"
+              title="Perfinion's Blog Security ATOM Feed"/>
+
+</head>
+<body>
+
+<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+	<div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a href="http://blog.perfinion.com/" class="navbar-brand">
+Perfinion's Blog            </a>
+        </div>
+        <div class="collapse navbar-collapse navbar-ex1-collapse">
+            <ul class="nav navbar-nav">
+                        <li >
+                            <a href="http://blog.perfinion.com/category/misc">Misc</a>
+                        </li>
+                        <li class="active">
+                            <a href="http://blog.perfinion.com/category/security">Security</a>
+                        </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+</div> <!-- /.navbar -->
+<!-- Banner -->
+<!-- End Banner -->
+<div class="container">
+    <div class="row">
+        <div class="col-sm-9">
+    <section id="content">
+        <article>
+            <header class="page-header">
+                <h1>
+                    <a href="http://blog.perfinion.com/2016/08/trusted-boot-part1/"
+                       rel="bookmark"
+                       title="Permalink to Trusted Boot Part 1">
+                        Trusted Boot Part 1
+                    </a>
+                </h1>
+            </header>
+            <div class="entry-content">
+                <div class="panel">
+                    <div class="panel-body">
+<footer class="post-info">
+    <span class="label label-default">Date</span>
+    <span class="published">
+        <i class="fa fa-calendar"></i><time datetime="2016-08-30T12:00:00+08:00"> Tue 30 August 2016</time>
+    </span>
+
+
+
+
+
+<span class="label label-default">Tags</span>
+	<a href="http://blog.perfinion.com/tag/security/">security</a>
+    
+</footer><!-- /.post-info -->                    </div>
+                </div>
+                <p>I finally managed to get tboot working in a way that makes sense to me. For
+those unfamiliar, tboot uses Intel's Trusted eXecution Technology to invoke a
+dynamic root of trust and then measure all the components you boot with (eg
+kernel and initrd). What took me ages to figure out was how one can upgrade
+kernels while keeping this chain working.</p>
+<p>There are two policies in tboot: Launch Control Policy and Verified Launch
+Policy. LCP is handled by TXT automagically and is used to make sure the
+correct tboot and PCRs are set and either continues boot by executing tboot or
+resets the machine. VLP is where the kernel, initrd and any other components
+are measured and is handled by tboot after the SINIT has happened.</p>
+<p>The trick I finally figured out is that the policy list needs to be signed with
+your own key.  If the policy unsigned (unfortunately what most documentation
+shows :-() then tboot will verify the kernels and extend the sha1 hash of the
+policy file into PCR 18. This obviously causes problems when upgrading kernels
+because everything changes.</p>
+<p>The difference with a signed policy is that instead of using the sha1 of the
+policy file itself, tboot will use the sha1 of the signed public key which is
+easily kept the same! hurrah!  Now finally I can update kernels and PCR 18 is
+unchanged so there is no mess with migrating sealed secrets to new, probably
+unknown, PCRs.</p>
+<p>I have extended genkernel to include all the tools needed to start tcsd and
+tpm_unsealdata and can successfully unseal a secret from the prompt within the
+initrd. Next I need to add the parts to automatically unseal and unlock the
+LUKS drive. There will be another post when that's all working.</p>
+<p>Here is the Makefile that I used to output and setup my policies:</p>
+<div class="highlight"><pre><span></span><span class="nv">KVERS</span> <span class="o">:=</span> <span class="k">$(</span>shell readlink /usr/src/linux <span class="p">|</span> sed <span class="s1">&#39;s/^linux-//&#39;</span><span class="k">)</span>
+<span class="nv">CMDLINE_TBOOT</span> <span class="o">:=</span> <span class="k">$(</span>shell <span class="nb">source</span> /etc/default/grub-tboot<span class="p">;</span> <span class="nb">echo</span> <span class="nv">$$</span><span class="o">{</span>GRUB_CMDLINE_TBOOT<span class="o">}</span><span class="k">)</span>
+
+<span class="nf">all</span><span class="o">:</span> <span class="n">list</span>.<span class="n">pol</span> <span class="n">list</span>.<span class="n">data</span>
+
+<span class="nf">clean</span><span class="o">:</span>
+    rm -f list* mle* *.elt vl.pol pcrs.txt
+
+<span class="c"># Launch Control Policy element for MLE</span>
+<span class="nf">mle_hash</span><span class="o">:</span> /<span class="n">boot</span>/<span class="n">tboot</span>.<span class="n">gz</span> /<span class="n">etc</span>/<span class="n">default</span>/<span class="n">grub</span>-<span class="n">tboot</span>
+    lcp_mlehash -c <span class="s2">&quot;</span><span class="k">$(</span>CMDLINE_TBOOT<span class="k">)</span><span class="s2">&quot;</span> /boot/tboot.gz &gt; mle_hash
+
+<span class="nf">mle.elt</span><span class="o">:</span> <span class="n">mle_hash</span>
+    lcp_crtpolelt --create --ctrl 0x01 --type mle --minver <span class="m">17</span> --out mle.elt mle_hash
+
+<span class="c"># LCP element for pcrs</span>
+<span class="nf">pcrs.txt</span><span class="o">:</span> /<span class="n">sys</span>/<span class="n">class</span>/<span class="n">tpm</span>/<span class="n">tpm</span>0/<span class="n">device</span>/<span class="n">pcrs</span>
+    egrep <span class="s2">&quot;^PCR-00&quot;</span> /sys/class/tpm/tpm0/device/pcrs &gt; pcrs.txt
+
+<span class="nf">pconf.elt</span><span class="o">:</span> <span class="n">pcrs</span>.<span class="n">txt</span>
+    lcp_crtpolelt --create --ctrl 0x01 --type pconf --out pconf.elt pcrs.txt
+
+
+<span class="c"># Make list out of all the policy elements</span>
+<span class="nf">list_unsig.lst</span><span class="o">:</span> <span class="n">mle</span>.<span class="n">elt</span> <span class="n">pconf</span>.<span class="n">elt</span> <span class="n">vl</span>.<span class="n">elt</span>
+    lcp_crtpollist --create --out list_unsig.lst mle.elt pconf.elt vl.elt
+
+<span class="c"># Sign the LCP so the pubkey is extended and NVRam is invariant</span>
+<span class="nf">list_sig.lst</span><span class="o">:</span> <span class="n">list_unsig</span>.<span class="n">lst</span>
+    cp list_unsig.lst list_sig.lst
+    lcp_crtpollist --sign --pub pubkey.pem --priv privkey.pem --out list_sig.lst
+
+<span class="c"># Policy type lists need to have both .pol (in NVRAM) and data separately (loaded by grub)</span>
+<span class="nf">list.data</span><span class="o">:</span> <span class="n">list_sig</span>.<span class="n">lst</span>
+    lcp_crtpol2 --create --ctrl 0x00 --type list --pol list.pol --data list.data list_sig.lst
+
+<span class="nf">list.pol</span><span class="o">:</span> <span class="n">list</span>.<span class="n">data</span>
+
+
+<span class="c"># Verified Launch Policy for tboot to verify kernel+initrd</span>
+<span class="c"># ctrl 0x00 means it does not extend module 0 into pcr18</span>
+<span class="nf">vl.pol</span><span class="o">:</span> /<span class="n">boot</span>/<span class="n">initramfs</span>-<span class="n">genkernel</span>-<span class="n">x</span>86<span class="n">_</span>64-<span class="k">$(</span><span class="nv">KVERS</span><span class="k">)</span>  /<span class="n">boot</span>/<span class="n">vmlinuz</span>-<span class="k">$(</span><span class="nv">KVERS</span><span class="k">)</span>
+    tb_polgen --create --ctrl 0x00 --type <span class="k">continue</span> vl.pol
+    tb_polgen --add --num <span class="m">0</span> --pcr <span class="m">19</span> --hash image --cmdline <span class="s2">&quot;root=/dev/mapper/root ro console=ttyS0,115200n8 console=tty0 intel_iommu=on noefi&quot;</span> --image /boot/vmlinuz-<span class="k">$(</span>KVERS<span class="k">)</span> vl.pol
+    tb_polgen --add --num <span class="m">1</span> --pcr <span class="m">20</span> --hash image --cmdline <span class="s2">&quot;&quot;</span> --image /boot/initramfs-genkernel-x86_64-<span class="k">$(</span>KVERS<span class="k">)</span> vl.pol
+
+<span class="nf">vl.elt</span><span class="o">:</span> <span class="n">vl</span>.<span class="n">pol</span>
+    lcp_crtpolelt --create --ctrl 0x01 --type custom --out vl.elt --uuid tboot vl.pol
+
+
+<span class="c"># define the indexes in the TPM</span>
+<span class="nf">definenv</span><span class="o">:</span>
+<span class="c">    # define the error locality</span>
+    tpmnv_defindex -i 0x20000002 -s <span class="m">8</span> -pv <span class="m">0</span> -rl 0x07 -wl 0x07 -p <span class="k">$(</span>PASSWORD<span class="k">)</span> <span class="o">||</span> <span class="nb">true</span>
+<span class="c">    # define the tboot verified launch policy locality</span>
+    tpmnv_defindex -i 0x20000001 -s <span class="m">512</span> -pv 0x02 -p <span class="k">$(</span>PASSWORD<span class="k">)</span> <span class="o">||</span> <span class="nb">true</span>
+<span class="c">    # define the TXT launch control policy locality</span>
+    tpmnv_defindex -i owner -s 0x36 -p <span class="k">$(</span>PASSWORD<span class="k">)</span> <span class="o">||</span> <span class="nb">true</span>
+
+
+<span class="c"># write everything to tpm and /boot</span>
+<span class="nf">writelcp</span><span class="o">:</span> <span class="n">list</span>.<span class="n">pol</span>
+    lcp_writepol -i owner -f list.pol -p <span class="k">$(</span>PASSWORD<span class="k">)</span>
+
+<span class="nf">writevlp</span><span class="o">:</span> <span class="n">vl</span>.<span class="n">pol</span>
+    lcp_writepol -i 0x20000001 -f vl.pol -p <span class="k">$(</span>PASSWORD<span class="k">)</span>
+
+<span class="nf">install</span><span class="o">:</span> <span class="n">writelcp</span>
+    cp list.data /boot/list.data
+</pre></div>
+            </div>
+            <!-- /.entry-content -->
+        </article>
+    </section>
+
+        </div>
+        <div class="col-sm-3" id="sidebar">
+            <aside>
+
+<section class="well well-sm">
+    <ul class="list-group list-group-flush">
+            <li class="list-group-item"><h4><i class="fa fa-home fa-lg"></i><span class="icon-label">Social</span></h4>
+              <ul class="list-group" id="social">
+                <li class="list-group-item"><a href="https://github.com/perfinion/"><i class="fa fa-github-square fa-lg"></i> Github</a></li>
+                <li class="list-group-item"><a href="https://twitter.com/perfinion/"><i class="fa fa-twitter-square fa-lg"></i> Twitter</a></li>
+              </ul>
+            </li>
+
+
+
+
+
+    <li class="list-group-item"><h4><i class="fa fa-external-link-square fa-lg"></i><span class="icon-label">Links</span></h4>
+      <ul class="list-group" id="links">
+        <li class="list-group-item">
+            <a href="https://www.gentoo.org/" target="_blank">
+                Gentoo Linux
+            </a>
+        </li>
+        <li class="list-group-item">
+            <a href="https://wiki.gentoo.org/wiki/SELinux" target="_blank">
+                Gentoo SELinux Wiki
+            </a>
+        </li>
+      </ul>
+    </li>
+    </ul>
+</section>
+            </aside>
+        </div>
+    </div>
+</div>
+<footer>
+   <div class="container">
+      <hr>
+      <div class="row">
+         <div class="col-xs-10">&copy; 2016 Jason Zaman
+            &middot; Powered by <a href="https://github.com/getpelican/pelican-themes/tree/master/pelican-bootstrap3" target="_blank">pelican-bootstrap3</a>,
+            <a href="http://docs.getpelican.com/" target="_blank">Pelican</a>,
+            <a href="http://getbootstrap.com" target="_blank">Bootstrap</a>         </div>
+         <div class="col-xs-2"><p class="pull-right"><i class="fa fa-arrow-up"></i> <a href="#">Back to top</a></p></div>
+      </div>
+   </div>
+</footer>
+<script src="http://blog.perfinion.com/theme/js/jquery.min.js"></script>
+
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="http://blog.perfinion.com/theme/js/bootstrap.min.js"></script>
+
+<!-- Enable responsive features in IE8 with Respond.js (https://github.com/scottjehl/Respond) -->
+<script src="http://blog.perfinion.com/theme/js/respond.min.js"></script>
+
+
+</body>
+</html>
