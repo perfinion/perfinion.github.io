@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Perfinion's Blog</title><link>http://blog.perfinion.com/</link><description></description><atom:link href="http://blog.perfinion.com/feed/all.rss.xml" rel="self"></atom:link><lastBuildDate>Wed, 21 Sep 2016 12:00:00 +0800</lastBuildDate><item><title>SELinux desktop profile in Gentoo</title><link>http://blog.perfinion.com/2016/09/selinux-desktop-profile/</link><description>&lt;p&gt;SELinux desktop profiles came up on IRC earlier and I thought it might be a good idea to make a post about.
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Perfinion's Blog</title><link>http://blog.perfinion.com/</link><description></description><atom:link href="http://blog.perfinion.com/feed/all.rss.xml" rel="self"></atom:link><lastBuildDate>Wed, 05 Oct 2016 22:00:00 +0800</lastBuildDate><item><title>SELinux desktop profile in Gentoo</title><link>http://blog.perfinion.com/2016/09/selinux-desktop-profile/</link><description>&lt;p&gt;SELinux desktop profiles came up on IRC earlier and I thought it might be a good idea to make a post about.
 Currently in gentoo there are only two selinux profiles:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;meriadoc ~ # eselect profile list
 Available profile symlink targets:
@@ -37,14 +37,14 @@ mkdir /etc/portage/make.profile
 
 &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="m"&gt;6&lt;/span&gt; &amp;gt; /etc/portage/make.profile/eapi
 &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;gentoo:default/linux/amd64/13.0/desktop&amp;quot;&lt;/span&gt; &amp;gt; /etc/portage/make.profile/parent
-&lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;gentoo:features/selinux&amp;quot;&lt;/span&gt; &amp;gt; /etc/portage/make.profile/parent
+&lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;gentoo:features/selinux&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt; /etc/portage/make.profile/parent
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;The parent file will tell portage to first use the desktop profile and then use
 the selinux feature on top. It is important that the selinux line comes last
 since it needs to override several things that might be set earlier in the
-desktop profile.&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Jason Zaman</dc:creator><pubDate>Wed, 21 Sep 2016 12:00:00 +0800</pubDate><guid>tag:blog.perfinion.com,2016-09-21:2016/09/selinux-desktop-profile/</guid><category>security</category></item><item><title>Trusted Boot Part 1</title><link>http://blog.perfinion.com/2016/08/trusted-boot-part1/</link><description>&lt;p&gt;I finally managed to get tboot working in a way that makes sense to me. For
+desktop profile.&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Jason Zaman</dc:creator><pubDate>Wed, 05 Oct 2016 22:00:00 +0800</pubDate><guid>tag:blog.perfinion.com,2016-09-21:2016/09/selinux-desktop-profile/</guid><category>security</category></item><item><title>Trusted Boot Part 1</title><link>http://blog.perfinion.com/2016/08/trusted-boot-part1/</link><description>&lt;p&gt;I finally managed to get tboot working in a way that makes sense to me. For
 those unfamiliar, tboot uses Intel's Trusted eXecution Technology to invoke a
 dynamic root of trust and then measure all the components you boot with (eg
 kernel and initrd). What took me ages to figure out was how one can upgrade

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Perfinion's Blog</title><link href="http://blog.perfinion.com/" rel="alternate"></link><link href="http://blog.perfinion.com/tag/security/feed/atom.xml" rel="self"></link><id>http://blog.perfinion.com/</id><updated>2016-09-21T12:00:00+08:00</updated><entry><title>SELinux desktop profile in Gentoo</title><link href="http://blog.perfinion.com/2016/09/selinux-desktop-profile/" rel="alternate"></link><updated>2016-09-21T12:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2016-09-21:2016/09/selinux-desktop-profile/</id><summary type="html">&lt;p&gt;SELinux desktop profiles came up on IRC earlier and I thought it might be a good idea to make a post about.
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Perfinion's Blog</title><link href="http://blog.perfinion.com/" rel="alternate"></link><link href="http://blog.perfinion.com/tag/security/feed/atom.xml" rel="self"></link><id>http://blog.perfinion.com/</id><updated>2016-10-05T22:00:00+08:00</updated><entry><title>SELinux desktop profile in Gentoo</title><link href="http://blog.perfinion.com/2016/09/selinux-desktop-profile/" rel="alternate"></link><updated>2016-10-05T22:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2016-09-21:2016/09/selinux-desktop-profile/</id><summary type="html">&lt;p&gt;SELinux desktop profiles came up on IRC earlier and I thought it might be a good idea to make a post about.
 Currently in gentoo there are only two selinux profiles:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;meriadoc ~ # eselect profile list
 Available profile symlink targets:
@@ -37,7 +37,7 @@ mkdir /etc/portage/make.profile
 
 &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="m"&gt;6&lt;/span&gt; &amp;gt; /etc/portage/make.profile/eapi
 &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;gentoo:default/linux/amd64/13.0/desktop&amp;quot;&lt;/span&gt; &amp;gt; /etc/portage/make.profile/parent
-&lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;gentoo:features/selinux&amp;quot;&lt;/span&gt; &amp;gt; /etc/portage/make.profile/parent
+&lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;gentoo:features/selinux&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt; /etc/portage/make.profile/parent
 &lt;/pre&gt;&lt;/div&gt;
 
 
