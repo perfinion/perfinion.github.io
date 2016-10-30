@@ -1,5 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Perfinion's Blog</title><link>http://blog.perfinion.com/</link><description></description><atom:link href="http://blog.perfinion.com/feed/all.rss.xml" rel="self"></atom:link><lastBuildDate>Wed, 05 Oct 2016 22:00:00 +0800</lastBuildDate><item><title>SELinux desktop profile in Gentoo</title><link>http://blog.perfinion.com/2016/09/selinux-desktop-profile/</link><description>&lt;p&gt;SELinux desktop profiles came up on IRC earlier and I thought it might be a good idea to make a post about.
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Perfinion's Blog</title><link>http://blog.perfinion.com/</link><description></description><atom:link href="http://blog.perfinion.com/feed/all.rss.xml" rel="self"></atom:link><lastBuildDate>Sun, 30 Oct 2016 12:00:00 +0800</lastBuildDate><item><title>SELinux userspace 2.6 released</title><link>http://blog.perfinion.com/2016/10/selinux-userspace-26-released/</link><description>&lt;p&gt;The SELinux userspace libraries and programs recently released version 2.6. I
+bumped them in Gentoo a couple days ago. They add a ton of new features, here
+are a few of the main points:&lt;/p&gt;
+&lt;p&gt;I finally got semanage and sepolicy updated to use setools4. Setools4 replaces
+setools3 which has been unmaintained for quite a long time and had issues with
+the new policy versions. If you previously had &lt;code&gt;policy-version = 29&lt;/code&gt; in your
+&lt;code&gt;/etc/selinux/semanage.conf&lt;/code&gt;, you can comment it out after updating to
+app-admin/setools-4.0.&lt;/p&gt;
+&lt;p&gt;genhomedircon has a ton of updates. I added new templating patterns that are
+expanded for usernames and ids. I added support for &lt;code&gt;%{USERNAME}&lt;/code&gt; and &lt;code&gt;%{USERID}&lt;/code&gt;
+to expand in fcontexts. This was primarily for &lt;code&gt;$XDG_RUNTIME_DIR&lt;/code&gt; adding
+&lt;code&gt;/run/user/%{USERID}&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;genhomedircon finally has support for %group syntax in the list of users. You
+can now do:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;semanage login --add -s staff_u -r &lt;span class="s1"&gt;&amp;#39;s0-s0:c0.c1023&amp;#39;&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;%wheel&amp;#39;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Instead of having to hardcode all the admins usernames. This is something I'd
+wanted for ages but didn't get around to, so thanks a ton to Gary for this.
+Once this has all gone stable I'll look into adding this automatically to
+seusers.&lt;/p&gt;
+&lt;p&gt;genhomedircon now replaces the whole context instead of only the user part.
+This means genhomedircon can support RBACSEP now. This is role-based separation
+instead of UBAC like we currently have in gentoo. UBAC has some limitations
+about switching users that RBACSEP can would be able to fix. Because of this,
+entries mapped to the default user and system_u are no longer special-cased.
+This fixes an issue if a user had a homedir that was not in /home the fcontexts
+would be missing. There is another side effect of this fix, there is now a
+warning printed:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;libsemanage.add_user: user system_u not in password file
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;This is caused by:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# semanage login -l&lt;/span&gt;
+system_u    system_u    s0-s0:c0.c1023    *
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The warning is non-fatal and doesn't actually cause any problems. It is because
+system_u is not a valid Linux user so the line is nonsense. I will remove this
+line from seusers in the policy when I add %wheel. If you want to make the warning go away now, you can run:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;semanage login --delete system_u
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;There is also a pcre2 USE-flag for using libpcre2 instead of libcpre. The
+default is still pcre1 because pcre2 takes up more disk space in the
+file_contexts.bin files.&lt;/p&gt;
+&lt;p&gt;The full announcement email is &lt;a href="https://marc.info/?l=selinux&amp;amp;m=147646050027049&amp;amp;w=2"&gt;here&lt;/a&gt;&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Jason Zaman</dc:creator><pubDate>Sun, 30 Oct 2016 12:00:00 +0800</pubDate><guid>tag:blog.perfinion.com,2016-10-30:2016/10/selinux-userspace-26-released/</guid><category>security</category><category>gentoo</category></item><item><title>SELinux desktop profile in Gentoo</title><link>http://blog.perfinion.com/2016/09/selinux-desktop-profile/</link><description>&lt;p&gt;SELinux desktop profiles came up on IRC earlier and I thought it might be a good idea to make a post about.
 Currently in gentoo there are only two selinux profiles:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;meriadoc ~ # eselect profile list
 Available profile symlink targets:

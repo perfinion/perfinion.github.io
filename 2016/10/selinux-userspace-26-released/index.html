@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: http://ogp.me/ns# fb: https://www.facebook.com/2008/fbml">
+<head>
+    <title>SELinux userspace 2.6 released - Perfinion's Blog</title>
+    <!-- Using the latest rendering mode for IE -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+
+<link rel="canonical" href="http://blog.perfinion.com/2016/10/selinux-userspace-26-released/">
+
+        <meta name="author" content="Jason Zaman" />
+        <meta name="keywords" content="security,gentoo" />
+        <meta name="description" content="Version 2.6 of the SELinux userspace is out" />
+
+        <meta property="og:site_name" content="Perfinion's Blog" />
+        <meta property="og:type" content="article"/>
+        <meta property="og:title" content="SELinux userspace 2.6 released"/>
+        <meta property="og:url" content="http://blog.perfinion.com/2016/10/selinux-userspace-26-released/"/>
+        <meta property="og:description" content="Version 2.6 of the SELinux userspace is out"/>
+        <meta property="article:published_time" content="2016-10-30" />
+            <meta property="article:section" content="Security" />
+            <meta property="article:tag" content="security" />
+            <meta property="article:tag" content="gentoo" />
+            <meta property="article:author" content="Jason Zaman" />
+
+
+    <!-- Bootstrap -->
+        <link rel="stylesheet" href="http://blog.perfinion.com/theme/css/bootstrap.min.css" type="text/css"/>
+    <link href="http://blog.perfinion.com/theme/css/font-awesome.min.css" rel="stylesheet">
+
+    <link href="http://blog.perfinion.com/theme/css/pygments/native.css" rel="stylesheet">
+    <link rel="stylesheet" href="http://blog.perfinion.com/theme/css/style.css" type="text/css"/>
+
+        <link href="http://blog.perfinion.com/feed/all.atom.xml" type="application/atom+xml" rel="alternate"
+              title="Perfinion's Blog ATOM Feed"/>
+
+        <link href="http://blog.perfinion.com/feed/all.rss.xml" type="application/rss+xml" rel="alternate"
+              title="Perfinion's Blog RSS Feed"/>
+
+
+        <link href="http://blog.perfinion.com/category/security/feed/atom.xml" type="application/atom+xml" rel="alternate"
+              title="Perfinion's Blog Security ATOM Feed"/>
+
+</head>
+<body>
+
+<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+	<div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a href="http://blog.perfinion.com/" class="navbar-brand">
+Perfinion's Blog            </a>
+        </div>
+        <div class="collapse navbar-collapse navbar-ex1-collapse">
+            <ul class="nav navbar-nav">
+                        <li >
+                            <a href="http://blog.perfinion.com/category/misc">Misc</a>
+                        </li>
+                        <li class="active">
+                            <a href="http://blog.perfinion.com/category/security">Security</a>
+                        </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+</div> <!-- /.navbar -->
+<!-- Banner -->
+<!-- End Banner -->
+<div class="container">
+    <div class="row">
+        <div class="col-sm-9">
+    <section id="content">
+        <article>
+            <header class="page-header">
+                <h1>
+                    <a href="http://blog.perfinion.com/2016/10/selinux-userspace-26-released/"
+                       rel="bookmark"
+                       title="Permalink to SELinux userspace 2.6 released">
+                        SELinux userspace 2.6 released
+                    </a>
+                </h1>
+            </header>
+            <div class="entry-content">
+                <div class="panel">
+                    <div class="panel-body">
+<footer class="post-info">
+    <span class="label label-default">Date</span>
+    <span class="published">
+        <i class="fa fa-calendar"></i><time datetime="2016-10-30T12:00:00+08:00"> Sun 30 October 2016</time>
+    </span>
+
+
+
+
+
+<span class="label label-default">Tags</span>
+	<a href="http://blog.perfinion.com/tag/security/">security</a>
+        /
+	<a href="http://blog.perfinion.com/tag/gentoo/">gentoo</a>
+    
+</footer><!-- /.post-info -->                    </div>
+                </div>
+                <p>The SELinux userspace libraries and programs recently released version 2.6. I
+bumped them in Gentoo a couple days ago. They add a ton of new features, here
+are a few of the main points:</p>
+<p>I finally got semanage and sepolicy updated to use setools4. Setools4 replaces
+setools3 which has been unmaintained for quite a long time and had issues with
+the new policy versions. If you previously had <code>policy-version = 29</code> in your
+<code>/etc/selinux/semanage.conf</code>, you can comment it out after updating to
+app-admin/setools-4.0.</p>
+<p>genhomedircon has a ton of updates. I added new templating patterns that are
+expanded for usernames and ids. I added support for <code>%{USERNAME}</code> and <code>%{USERID}</code>
+to expand in fcontexts. This was primarily for <code>$XDG_RUNTIME_DIR</code> adding
+<code>/run/user/%{USERID}</code>.</p>
+<p>genhomedircon finally has support for %group syntax in the list of users. You
+can now do:</p>
+<div class="highlight"><pre><span></span>semanage login --add -s staff_u -r <span class="s1">&#39;s0-s0:c0.c1023&#39;</span> <span class="s1">&#39;%wheel&#39;</span>
+</pre></div>
+
+
+<p>Instead of having to hardcode all the admins usernames. This is something I'd
+wanted for ages but didn't get around to, so thanks a ton to Gary for this.
+Once this has all gone stable I'll look into adding this automatically to
+seusers.</p>
+<p>genhomedircon now replaces the whole context instead of only the user part.
+This means genhomedircon can support RBACSEP now. This is role-based separation
+instead of UBAC like we currently have in gentoo. UBAC has some limitations
+about switching users that RBACSEP can would be able to fix. Because of this,
+entries mapped to the default user and system_u are no longer special-cased.
+This fixes an issue if a user had a homedir that was not in /home the fcontexts
+would be missing. There is another side effect of this fix, there is now a
+warning printed:</p>
+<div class="highlight"><pre><span></span>libsemanage.add_user: user system_u not in password file
+</pre></div>
+
+
+<p>This is caused by:</p>
+<div class="highlight"><pre><span></span><span class="c1"># semanage login -l</span>
+system_u    system_u    s0-s0:c0.c1023    *
+</pre></div>
+
+
+<p>The warning is non-fatal and doesn't actually cause any problems. It is because
+system_u is not a valid Linux user so the line is nonsense. I will remove this
+line from seusers in the policy when I add %wheel. If you want to make the warning go away now, you can run:</p>
+<div class="highlight"><pre><span></span>semanage login --delete system_u
+</pre></div>
+
+
+<p>There is also a pcre2 USE-flag for using libpcre2 instead of libcpre. The
+default is still pcre1 because pcre2 takes up more disk space in the
+file_contexts.bin files.</p>
+<p>The full announcement email is <a href="https://marc.info/?l=selinux&amp;m=147646050027049&amp;w=2">here</a></p>
+            </div>
+            <!-- /.entry-content -->
+        </article>
+    </section>
+
+        </div>
+        <div class="col-sm-3" id="sidebar">
+            <aside>
+
+<section class="well well-sm">
+    <ul class="list-group list-group-flush">
+            <li class="list-group-item"><h4><i class="fa fa-home fa-lg"></i><span class="icon-label">Social</span></h4>
+              <ul class="list-group" id="social">
+                <li class="list-group-item"><a href="https://github.com/perfinion/"><i class="fa fa-github-square fa-lg"></i> Github</a></li>
+                <li class="list-group-item"><a href="https://twitter.com/perfinion/"><i class="fa fa-twitter-square fa-lg"></i> Twitter</a></li>
+              </ul>
+            </li>
+
+
+
+
+
+    <li class="list-group-item"><h4><i class="fa fa-external-link-square fa-lg"></i><span class="icon-label">Links</span></h4>
+      <ul class="list-group" id="links">
+        <li class="list-group-item">
+            <a href="https://www.gentoo.org/" target="_blank">
+                Gentoo Linux
+            </a>
+        </li>
+        <li class="list-group-item">
+            <a href="https://wiki.gentoo.org/wiki/SELinux" target="_blank">
+                Gentoo SELinux Wiki
+            </a>
+        </li>
+      </ul>
+    </li>
+    </ul>
+</section>
+            </aside>
+        </div>
+    </div>
+</div>
+<footer>
+   <div class="container">
+      <hr>
+      <div class="row">
+         <div class="col-xs-10">&copy; 2016 Jason Zaman
+            &middot; Powered by <a href="https://github.com/getpelican/pelican-themes/tree/master/pelican-bootstrap3" target="_blank">pelican-bootstrap3</a>,
+            <a href="http://docs.getpelican.com/" target="_blank">Pelican</a>,
+            <a href="http://getbootstrap.com" target="_blank">Bootstrap</a>         </div>
+         <div class="col-xs-2"><p class="pull-right"><i class="fa fa-arrow-up"></i> <a href="#">Back to top</a></p></div>
+      </div>
+   </div>
+</footer>
+<script src="http://blog.perfinion.com/theme/js/jquery.min.js"></script>
+
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="http://blog.perfinion.com/theme/js/bootstrap.min.js"></script>
+
+<!-- Enable responsive features in IE8 with Respond.js (https://github.com/scottjehl/Respond) -->
+<script src="http://blog.perfinion.com/theme/js/respond.min.js"></script>
+
+
+</body>
+</html>
