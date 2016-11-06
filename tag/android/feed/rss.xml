@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Perfinion's Blog</title><link>http://blog.perfinion.com/</link><description></description><atom:link href="http://blog.perfinion.com/tag/android/feed/rss.xml" rel="self"></atom:link><lastBuildDate>Mon, 07 Nov 2016 12:00:00 +0800</lastBuildDate><item><title>GDG-SG DevFest 2016 - Android: Under the Hood</title><link>http://blog.perfinion.com/2016/11/gdg-sg-devfest-android-under-the-hood/</link><description>&lt;p&gt;GDG-SG had its annual DevFest on Saturday. I gave a talk on a quick overview
+of the internals of Android.&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://www.gdg-sg.org/2016/09/gdg-devfest-2016-coming-soon.html"&gt;The event details are here.&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Android is such a huge topic and I barely managed to skim the surface. I tried
+to cover some of the key points in Android and compare them to a regular Linux
+distro. There are a lot of things that are different but also a lot that is the
+same. Hopefully the talk helped give some insight to how and why things are
+designed as they are.&lt;/p&gt;
+&lt;p&gt;The slides from the presentation are &lt;a href="http://blog.perfinion.com/2016/11/gdg-sg-devfest-android-under-the-hood/files/2016/GDG_DevFest_2016_Android_Under_the_Hood.pdf"&gt;here.&lt;/a&gt;&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Jason Zaman</dc:creator><pubDate>Mon, 07 Nov 2016 12:00:00 +0800</pubDate><guid>tag:blog.perfinion.com,2016-11-07:2016/11/gdg-sg-devfest-android-under-the-hood/</guid><category>android</category><category>talks</category></item></channel></rss>

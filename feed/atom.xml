@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Perfinion's Blog</title><link href="http://blog.perfinion.com/" rel="alternate"></link><link href="http://blog.perfinion.com/feed/atom.xml" rel="self"></link><id>http://blog.perfinion.com/</id><updated>2016-10-30T12:00:00+08:00</updated><entry><title>SELinux userspace 2.6 released</title><link href="http://blog.perfinion.com/2016/10/selinux-userspace-26-released/" rel="alternate"></link><updated>2016-10-30T12:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2016-10-30:2016/10/selinux-userspace-26-released/</id><summary type="html">&lt;p&gt;The SELinux userspace libraries and programs recently released version 2.6. I
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Perfinion's Blog</title><link href="http://blog.perfinion.com/" rel="alternate"></link><link href="http://blog.perfinion.com/feed/atom.xml" rel="self"></link><id>http://blog.perfinion.com/</id><updated>2016-11-07T12:00:00+08:00</updated><entry><title>GDG-SG DevFest 2016 - Android: Under the Hood</title><link href="http://blog.perfinion.com/2016/11/gdg-sg-devfest-android-under-the-hood/" rel="alternate"></link><updated>2016-11-07T12:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2016-11-07:2016/11/gdg-sg-devfest-android-under-the-hood/</id><summary type="html">&lt;p&gt;GDG-SG had its annual DevFest on Saturday. I gave a talk on a quick overview
+of the internals of Android.&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://www.gdg-sg.org/2016/09/gdg-devfest-2016-coming-soon.html"&gt;The event details are here.&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Android is such a huge topic and I barely managed to skim the surface. I tried
+to cover some of the key points in Android and compare them to a regular Linux
+distro. There are a lot of things that are different but also a lot that is the
+same. Hopefully the talk helped give some insight to how and why things are
+designed as they are.&lt;/p&gt;
+&lt;p&gt;The slides from the presentation are &lt;a href="http://blog.perfinion.com/2016/11/gdg-sg-devfest-android-under-the-hood/files/2016/GDG_DevFest_2016_Android_Under_the_Hood.pdf"&gt;here.&lt;/a&gt;&lt;/p&gt;</summary><category term="android"></category><category term="talks"></category></entry><entry><title>SELinux userspace 2.6 released</title><link href="http://blog.perfinion.com/2016/10/selinux-userspace-26-released/" rel="alternate"></link><updated>2016-10-30T12:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2016-10-30:2016/10/selinux-userspace-26-released/</id><summary type="html">&lt;p&gt;The SELinux userspace libraries and programs recently released version 2.6. I
 bumped them in Gentoo a couple days ago. They add a ton of new features, here
 are a few of the main points:&lt;/p&gt;
 &lt;p&gt;I finally got semanage and sepolicy updated to use setools4. Setools4 replaces
