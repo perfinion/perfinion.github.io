@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Perfinion's Blog</title><link href="http://blog.perfinion.com/" rel="alternate"></link><link href="http://blog.perfinion.com/tag/talks/feed/atom.xml" rel="self"></link><id>http://blog.perfinion.com/</id><updated>2016-11-07T12:00:00+08:00</updated><entry><title>GDG-SG DevFest 2016 - Android: Under the Hood</title><link href="http://blog.perfinion.com/2016/11/gdg-sg-devfest-android-under-the-hood/" rel="alternate"></link><updated>2016-11-07T12:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2016-11-07:2016/11/gdg-sg-devfest-android-under-the-hood/</id><summary type="html">&lt;p&gt;GDG-SG had its annual DevFest on Saturday. I gave a talk on a quick overview
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Perfinion's Blog - talks</title><link href="http://blog.perfinion.com/" rel="alternate"></link><link href="http://blog.perfinion.com/tag/talks/feed/atom.xml" rel="self"></link><id>http://blog.perfinion.com/</id><updated>2017-03-19T17:00:00+08:00</updated><entry><title>FOSSASIA 2017 - SELinux Introduction talk</title><link href="http://blog.perfinion.com/2017/03/fossasia-2017-selinux-introduction/" rel="alternate"></link><published>2017-03-19T17:00:00+08:00</published><updated>2017-03-19T17:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2017-03-19:/2017/03/fossasia-2017-selinux-introduction/</id><summary type="html">&lt;p&gt;Slides and video from my talk about SELinux at FOSSASIA 2017&lt;/p&gt;</summary><content type="html">&lt;p&gt;FOSSASIA 2017 was this weekend and I gave an introductory talk on SELinux.
+&lt;a href="http://2017.fossasia.org/"&gt;The event details are here.&lt;/a&gt; There were a lot of
+great talks over the three days. Engineers.sg filmed all the talks too so you
+can see them all on the &lt;a href="https://www.youtube.com/channel/UCQprMsG-raCIMlBudm20iLQ"&gt;FOSSASIA youtube
+channel.&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;In my talk I tried to give a quick overview of SELinux so that people would be
+more familiar with the basic concepts behind SELinux. I covered DAC vs MAC,
+SELinux labels and basics of how the rules are layed out. There were lots of
+great questions too and we had some fun playing around with a little backdoor
+shell in the webserver and the protections that SELinux had.&lt;/p&gt;
+&lt;p&gt;The slides from the presentation are &lt;a href="http://blog.perfinion.com/2017/03/fossasia-2017-selinux-introduction/files/2017/FOSSASIA_2017_SELinux_Introduction.pdf"&gt;here.&lt;/a&gt;
+The recording is &lt;a href="https://www.youtube.com/watch?v=FRdk9xA6lA0"&gt;here.&lt;/a&gt;&lt;/p&gt;</content><category term="selinux"></category><category term="talks"></category><category term="fossasia"></category></entry><entry><title>GDG-SG DevFest 2016 - Android: Under the Hood</title><link href="http://blog.perfinion.com/2016/11/gdg-sg-devfest-android-under-the-hood/" rel="alternate"></link><published>2016-11-07T12:00:00+08:00</published><updated>2016-11-07T12:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2016-11-07:/2016/11/gdg-sg-devfest-android-under-the-hood/</id><summary type="html">&lt;p&gt;GDG-SG DevFest 2016 - Android: Under the Hood slides&lt;/p&gt;</summary><content type="html">&lt;p&gt;GDG-SG had its annual DevFest on Saturday. I gave a talk on a quick overview
 of the internals of Android.&lt;/p&gt;
 &lt;p&gt;&lt;a href="http://www.gdg-sg.org/2016/09/gdg-devfest-2016-coming-soon.html"&gt;The event details are here.&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;Android is such a huge topic and I barely managed to skim the surface. I tried
@@ -7,4 +18,4 @@ to cover some of the key points in Android and compare them to a regular Linux
 distro. There are a lot of things that are different but also a lot that is the
 same. Hopefully the talk helped give some insight to how and why things are
 designed as they are.&lt;/p&gt;
-&lt;p&gt;The slides from the presentation are &lt;a href="http://blog.perfinion.com/2016/11/gdg-sg-devfest-android-under-the-hood/files/2016/GDG_DevFest_2016_Android_Under_the_Hood.pdf"&gt;here.&lt;/a&gt;&lt;/p&gt;</summary><category term="android"></category><category term="talks"></category></entry></feed>
+&lt;p&gt;The slides from the presentation are &lt;a href="http://blog.perfinion.com/2016/11/gdg-sg-devfest-android-under-the-hood/files/2016/GDG_DevFest_2016_Android_Under_the_Hood.pdf"&gt;here.&lt;/a&gt;&lt;/p&gt;</content><category term="android"></category><category term="talks"></category></entry></feed>
