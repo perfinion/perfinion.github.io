@@ -1,5 +1,158 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Perfinion's Blog</title><link href="https://blog.perfinion.com/" rel="alternate"></link><link href="https://blog.perfinion.com/feed/all.atom.xml" rel="self"></link><id>https://blog.perfinion.com/</id><updated>2017-03-19T17:00:00+08:00</updated><entry><title>FOSSASIA 2017 - SELinux Introduction talk</title><link href="https://blog.perfinion.com/2017/03/fossasia-2017-selinux-introduction/" rel="alternate"></link><published>2017-03-19T17:00:00+08:00</published><updated>2017-03-19T17:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2017-03-19:/2017/03/fossasia-2017-selinux-introduction/</id><summary type="html">&lt;p&gt;Slides and video from my talk about SELinux at FOSSASIA 2017&lt;/p&gt;</summary><content type="html">&lt;p&gt;FOSSASIA 2017 was this weekend and I gave an introductory talk on SELinux.
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Perfinion's Blog</title><link href="https://blog.perfinion.com/" rel="alternate"></link><link href="https://blog.perfinion.com/feed/all.atom.xml" rel="self"></link><id>https://blog.perfinion.com/</id><updated>2018-05-04T00:00:00+08:00</updated><entry><title>FOSSASIA 2018 - SELinux Policy Development</title><link href="https://blog.perfinion.com/2018/05/fossasia-2018-selinux-policy-dev/" rel="alternate"></link><published>2018-05-04T00:00:00+08:00</published><updated>2018-05-04T00:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2018-05-04:/2018/05/fossasia-2018-selinux-policy-dev/</id><summary type="html">A month ago was FOSSASIA 2018 and I got to give another talk about SELinux.
+Last years talk was only about the basics of how things SELinux works and
+labels and allow rules. This year covered more of the policy side of things. I
+went over now to write a Reference Policy module and did a quick demo.</summary><content type="html">&lt;p&gt;A month ago was FOSSASIA 2018 and I got to give another talk about SELinux.
+Last years talk was only about the basics of how things SELinux works and
+labels and allow rules. This year covered more of the policy side of things. I
+went over now to write a Reference Policy module and did a quick demo.&lt;/p&gt;
+&lt;p&gt;I started off showing the different parts of a policy as far as the kernel and
+other tools are concerned, &lt;code&gt;/etc/selinux/strict/policy/policy.31&lt;/code&gt; is the big
+blob that gets loaded into the kernel when you boot. Then there are the file
+contexts which live in &lt;code&gt;/etc/selinux/strict/contexts/files/&lt;/code&gt;. These don't get
+loaded in the kernel but are used by various userspace tools to lookup labels.
+For example when you restorecon something it will look there, or maybe a daemon
+like udev needs to know what fcontext should be applied to a device node when
+you plug something in. There are three main files with the fcontexts:
+&lt;code&gt;file_contexts&lt;/code&gt;, &lt;code&gt;file_contexts.home_dirs&lt;/code&gt;, &lt;code&gt;file_contexts.local&lt;/code&gt; The
+base one has all the main labels for your entire system as defined by the
+distros policy.  home_dirs is generated whenever the policy is loaded and
+contains the contexts customized for each user on the system. Any fcontexts
+that start with &lt;code&gt;HOME_DIR&lt;/code&gt; are automatically re-written for each user based
+on their selinux user and role.  It also supports rewriting based on &lt;code&gt;USERID&lt;/code&gt;
+or &lt;code&gt;USERNAME&lt;/code&gt; which is usually needed for things in /run/user/.  Finally, the
+.local file is where any fcontexts that are added using semanage fcontext end
+up.&lt;/p&gt;
+&lt;p&gt;Then I showed how the entire policy above is compiled from separate modules.
+Reference Policy (aka refpolicy) is how most selinux modules are written. It is
+made up of a bunch of m4 macros to simplify things that happen together often.
+For example reading a file requires maybe getattr'ing it then opening then
+finally a read system call. We simplify this down this set to
+&lt;code&gt;read_file_perms&lt;/code&gt;. They all follow a consisten naming scheme so you quickly
+know what each does. They are &lt;code&gt;&amp;lt;perm&amp;gt;_&amp;lt;class&amp;gt;_perms&lt;/code&gt;, where perm is something
+like setattr, read, write, manage, and class is something like file, dir,
+lnk_file.&lt;/p&gt;
+&lt;p&gt;Patterns are the next building block. Lots of things require many other
+operations to actually work, for example creating a file requires being able to
+access the directory that it's in.  There are patterns like:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;define(`write_files_pattern&amp;#39;,`
+    allow $1 $2:dir search_dir_perms;
+    allow $1 $3:file write_file_perms;
+&amp;#39;)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;You call it like &lt;code&gt;write_files_pattern(app_t, var_log_t, app_log_t)&lt;/code&gt; and it will
+grant you the minimum accesses you need to var_log_t dirs and then give you
+write access to app_log_t.&lt;/p&gt;
+&lt;p&gt;Each module that makes up an SELinux policy is supposed to be completely
+self-contained and can only refer to things it itself defines. In order to make
+rules relating to other modules, each refpolicy module has a ton of interfaces.
+These look like: &lt;code&gt;modulename[_modifier]_verb_predicate()&lt;/code&gt;, for example:
+&lt;code&gt;apache_append_log(app_t)&lt;/code&gt; or &lt;code&gt;logging_log_filetrans(app_t, app_log_t, file)&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;The last part i covered in the slides was a small tool written by Sven
+Vermeulen to find and show interfaces and defines.  They are defined
+&lt;a href="https://github.com/sjvermeu/small.coding/blob/master/selinux-local/localfuncs"&gt;here.&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;I did pass around a VM image so people could follow along and play with the
+small demo policy I made. I won't be uploading the image here since it was
+purposefully made to be insecure and that seems like a bad idea. You can use
+any Gentoo or redhat VM with SELinux enabled and just use the policy below.:&lt;/p&gt;
+&lt;p&gt;The slides from the presentation are &lt;a href="https://blog.perfinion.com/2018/05/fossasia-2018-selinux-policy-dev/files/2018/FOSSASIA_2018_SELinux_Policy_Development.pdf"&gt;here.&lt;/a&gt;
+The recording is &lt;a href="https://www.youtube.com/watch?v=GWy6vXIQxkc"&gt;here.&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;myapp.te&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;policy_module(myapp, 0.1)
+
+###########################
+#
+# declarations
+#
+
+type myapp_t;
+type myapp_exec_t;
+userdom_user_application_domain(myapp_t, myapp_exec_t)
+
+type myapp_log_t;
+logging_log_file(myapp_log_t)
+
+
+###########################
+#
+# myapp_t local policy
+#
+
+allow myapp_t self:tcp_socket create_stream_socket_perms;
+
+allow myapp_t myapp_log_t:file manage_file_perms;
+logging_log_filetrans(myapp_t, myapp_log_t, file)
+
+corecmd_exec_bin(myapp_t)
+corenet_tcp_bind_generic_node(myapp_t)
+corenet_tcp_bind_http_cache_port(myapp_t)
+
+files_read_etc_files(myapp_t)
+files_read_etc_runtime(myapp_t)
+
+sysnet_read_config(myapp_t)
+
+domain_use_interactive_fds(myapp_t)
+miscfiles_read_localization(myapp_t)
+
+userdom_use_inherited_user_terminals(myapp_t)
+userdom_read_user_home_content_files(myapp_t)
+
+# this should properly be in staff.te
+
+gen_require(`
+        type staff_t, sysadm_t;
+        role staff_r, sysadm_r;
+&amp;#39;)
+myapp_role(staff_r, staff_t)
+myapp_role(sysadm_r, sysadm_t)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;myapp.if&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;## &amp;lt;summary&amp;gt;Myapp client&amp;lt;/summary&amp;gt;
+
+#######################################
+## &amp;lt;summary&amp;gt;
+##      The role for using the myapp client.
+## &amp;lt;/summary&amp;gt;
+## &amp;lt;param name=&amp;quot;role&amp;quot;&amp;gt;
+##      &amp;lt;summary&amp;gt;
+##      The role associated with the user domain.
+##      &amp;lt;/summary&amp;gt;
+## &amp;lt;/param&amp;gt;
+## &amp;lt;param name=&amp;quot;domain&amp;quot;&amp;gt;
+##      &amp;lt;summary&amp;gt;
+##      The user domain.
+##      &amp;lt;/summary&amp;gt;
+## &amp;lt;/param&amp;gt;
+#
+interface(`myapp_role&amp;#39;,`
+        gen_require(`
+                type myapp_t;
+                type myapp_exec_t;
+        &amp;#39;)
+
+        role $1 types myapp_t;
+
+        domtrans_pattern($2, myapp_exec_t, myapp_t)
+
+        allow $2 myapp_t:process { ptrace signal_perms };
+
+        ps_process_pattern($2, myapp_t)
+&amp;#39;)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;myapp.fc&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;/usr/local/bin/server.py    --    gen_context(system_u:object_r:myapp_exec_t,s0)
+&lt;/pre&gt;&lt;/div&gt;</content><category term="selinux"></category><category term="talks"></category><category term="fossasia"></category></entry><entry><title>FOSSASIA 2017 - SELinux Introduction talk</title><link href="https://blog.perfinion.com/2017/03/fossasia-2017-selinux-introduction/" rel="alternate"></link><published>2017-03-19T17:00:00+08:00</published><updated>2017-03-19T17:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2017-03-19:/2017/03/fossasia-2017-selinux-introduction/</id><summary type="html">FOSSASIA 2017 was this weekend and I gave an introductory talk on SELinux.
+&lt;a href="http://2017.fossasia.org/"&gt;The event details are here.&lt;/a&gt; There were a lot of
+great talks over the three days. Engineers.sg filmed all the talks too so you
+can see them all on the &lt;a href="https://www.youtube.com/channel/UCQprMsG-raCIMlBudm20iLQ"&gt;FOSSASIA youtube
+channel.&lt;/a&gt;</summary><content type="html">&lt;p&gt;FOSSASIA 2017 was this weekend and I gave an introductory talk on SELinux.
 &lt;a href="http://2017.fossasia.org/"&gt;The event details are here.&lt;/a&gt; There were a lot of
 great talks over the three days. Engineers.sg filmed all the talks too so you
 can see them all on the &lt;a href="https://www.youtube.com/channel/UCQprMsG-raCIMlBudm20iLQ"&gt;FOSSASIA youtube
@@ -10,7 +163,8 @@ SELinux labels and basics of how the rules are layed out. There were lots of
 great questions too and we had some fun playing around with a little backdoor
 shell in the webserver and the protections that SELinux had.&lt;/p&gt;
 &lt;p&gt;The slides from the presentation are &lt;a href="https://blog.perfinion.com/2017/03/fossasia-2017-selinux-introduction/files/2017/FOSSASIA_2017_SELinux_Introduction.pdf"&gt;here.&lt;/a&gt;
-The recording is &lt;a href="https://www.youtube.com/watch?v=FRdk9xA6lA0"&gt;here.&lt;/a&gt;&lt;/p&gt;</content><category term="selinux"></category><category term="talks"></category><category term="fossasia"></category></entry><entry><title>GDG-SG DevFest 2016 - Android: Under the Hood</title><link href="https://blog.perfinion.com/2016/11/gdg-sg-devfest-android-under-the-hood/" rel="alternate"></link><published>2016-11-07T12:00:00+08:00</published><updated>2016-11-07T12:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2016-11-07:/2016/11/gdg-sg-devfest-android-under-the-hood/</id><summary type="html">&lt;p&gt;GDG-SG DevFest 2016 - Android: Under the Hood slides&lt;/p&gt;</summary><content type="html">&lt;p&gt;GDG-SG had its annual DevFest on Saturday. I gave a talk on a quick overview
+The recording is &lt;a href="https://www.youtube.com/watch?v=FRdk9xA6lA0"&gt;here.&lt;/a&gt;&lt;/p&gt;</content><category term="selinux"></category><category term="talks"></category><category term="fossasia"></category></entry><entry><title>GDG-SG DevFest 2016 - Android: Under the Hood</title><link href="https://blog.perfinion.com/2016/11/gdg-sg-devfest-android-under-the-hood/" rel="alternate"></link><published>2016-11-07T12:00:00+08:00</published><updated>2016-11-07T12:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2016-11-07:/2016/11/gdg-sg-devfest-android-under-the-hood/</id><summary type="html">GDG-SG had its annual DevFest on Saturday. I gave a talk on a quick overview
+of the internals of Android.</summary><content type="html">&lt;p&gt;GDG-SG had its annual DevFest on Saturday. I gave a talk on a quick overview
 of the internals of Android.&lt;/p&gt;
 &lt;p&gt;&lt;a href="http://www.gdg-sg.org/2016/09/gdg-devfest-2016-coming-soon.html"&gt;The event details are here.&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;Android is such a huge topic and I barely managed to skim the surface. I tried
@@ -18,7 +172,9 @@ to cover some of the key points in Android and compare them to a regular Linux
 distro. There are a lot of things that are different but also a lot that is the
 same. Hopefully the talk helped give some insight to how and why things are
 designed as they are.&lt;/p&gt;
-&lt;p&gt;The slides from the presentation are &lt;a href="https://blog.perfinion.com/2016/11/gdg-sg-devfest-android-under-the-hood/files/2016/GDG_DevFest_2016_Android_Under_the_Hood.pdf"&gt;here.&lt;/a&gt;&lt;/p&gt;</content><category term="android"></category><category term="talks"></category></entry><entry><title>SELinux userspace 2.6 released</title><link href="https://blog.perfinion.com/2016/10/selinux-userspace-26-released/" rel="alternate"></link><published>2016-10-30T12:00:00+08:00</published><updated>2016-10-30T12:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2016-10-30:/2016/10/selinux-userspace-26-released/</id><summary type="html">&lt;p&gt;Version 2.6 of the SELinux userspace is out&lt;/p&gt;</summary><content type="html">&lt;p&gt;The SELinux userspace libraries and programs recently released version 2.6. I
+&lt;p&gt;The slides from the presentation are &lt;a href="https://blog.perfinion.com/2016/11/gdg-sg-devfest-android-under-the-hood/files/2016/GDG_DevFest_2016_Android_Under_the_Hood.pdf"&gt;here.&lt;/a&gt;&lt;/p&gt;</content><category term="android"></category><category term="talks"></category></entry><entry><title>SELinux userspace 2.6 released</title><link href="https://blog.perfinion.com/2016/10/selinux-userspace-26-released/" rel="alternate"></link><published>2016-10-30T12:00:00+08:00</published><updated>2016-10-30T12:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2016-10-30:/2016/10/selinux-userspace-26-released/</id><summary type="html">The SELinux userspace libraries and programs recently released version 2.6. I
+bumped them in Gentoo a couple days ago. They add a ton of new features, here
+are a few of the main points:</summary><content type="html">&lt;p&gt;The SELinux userspace libraries and programs recently released version 2.6. I
 bumped them in Gentoo a couple days ago. They add a ton of new features, here
 are a few of the main points:&lt;/p&gt;
 &lt;p&gt;I finally got semanage and sepolicy updated to use setools4. Setools4 replaces
@@ -68,7 +224,8 @@ line from seusers in the policy when I add %wheel. If you want to make the warni
 &lt;p&gt;There is also a pcre2 USE-flag for using libpcre2 instead of libcpre. The
 default is still pcre1 because pcre2 takes up more disk space in the
 file_contexts.bin files.&lt;/p&gt;
-&lt;p&gt;The full announcement email is &lt;a href="https://marc.info/?l=selinux&amp;amp;m=147646050027049&amp;amp;w=2"&gt;here&lt;/a&gt;&lt;/p&gt;</content><category term="security"></category><category term="gentoo"></category></entry><entry><title>SELinux desktop profile in Gentoo</title><link href="https://blog.perfinion.com/2016/09/selinux-desktop-profile/" rel="alternate"></link><published>2016-09-21T12:00:00+08:00</published><updated>2016-10-05T22:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2016-09-21:/2016/09/selinux-desktop-profile/</id><summary type="html">&lt;p&gt;Making a gentoo desktop/selinux profile&lt;/p&gt;</summary><content type="html">&lt;p&gt;SELinux desktop profiles came up on IRC earlier and I thought it might be a good idea to make a post about.
+&lt;p&gt;The full announcement email is &lt;a href="https://marc.info/?l=selinux&amp;amp;m=147646050027049&amp;amp;w=2"&gt;here&lt;/a&gt;&lt;/p&gt;</content><category term="security"></category><category term="gentoo"></category></entry><entry><title>SELinux desktop profile in Gentoo</title><link href="https://blog.perfinion.com/2016/09/selinux-desktop-profile/" rel="alternate"></link><published>2016-09-21T12:00:00+08:00</published><updated>2016-10-05T22:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2016-09-21:/2016/09/selinux-desktop-profile/</id><summary type="html">SELinux desktop profiles came up on IRC earlier and I thought it might be a good idea to make a post about.
+Currently in gentoo there are only two selinux profiles:</summary><content type="html">&lt;p&gt;SELinux desktop profiles came up on IRC earlier and I thought it might be a good idea to make a post about.
 Currently in gentoo there are only two selinux profiles:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;meriadoc ~ # eselect profile list
 Available profile symlink targets:
@@ -113,7 +270,11 @@ mkdir /etc/portage/make.profile
 &lt;p&gt;The parent file will tell portage to first use the desktop profile and then use
 the selinux feature on top. It is important that the selinux line comes last
 since it needs to override several things that might be set earlier in the
-desktop profile.&lt;/p&gt;</content><category term="security"></category></entry><entry><title>Trusted Boot Part 1</title><link href="https://blog.perfinion.com/2016/08/trusted-boot-part1/" rel="alternate"></link><published>2016-08-30T12:00:00+08:00</published><updated>2016-08-30T12:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2016-08-30:/2016/08/trusted-boot-part1/</id><summary type="html">&lt;p&gt;I finally got tboot working on my laptop and can upgrade kernels while keeping the PCRs the same.&lt;/p&gt;</summary><content type="html">&lt;p&gt;I finally managed to get tboot working in a way that makes sense to me. For
+desktop profile.&lt;/p&gt;</content><category term="security"></category></entry><entry><title>Trusted Boot Part 1</title><link href="https://blog.perfinion.com/2016/08/trusted-boot-part1/" rel="alternate"></link><published>2016-08-30T12:00:00+08:00</published><updated>2016-08-30T12:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2016-08-30:/2016/08/trusted-boot-part1/</id><summary type="html">I finally managed to get tboot working in a way that makes sense to me. For
+those unfamiliar, tboot uses Intel's Trusted eXecution Technology to invoke a
+dynamic root of trust and then measure all the components you boot with (eg
+kernel and initrd). What took me ages to figure out was how one can upgrade
+kernels while keeping this chain working.</summary><content type="html">&lt;p&gt;I finally managed to get tboot working in a way that makes sense to me. For
 those unfamiliar, tboot uses Intel's Trusted eXecution Technology to invoke a
 dynamic root of trust and then measure all the components you boot with (eg
 kernel and initrd). What took me ages to figure out was how one can upgrade
@@ -207,6 +368,8 @@ LUKS drive. There will be another post when that's all working.&lt;/p&gt;
 
 &lt;span class="nf"&gt;install&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;writelcp&lt;/span&gt;
     cp list.data /boot/list.data
-&lt;/pre&gt;&lt;/div&gt;</content><category term="security"></category></entry><entry><title>Hello World</title><link href="https://blog.perfinion.com/2016/08/hello-world/" rel="alternate"></link><published>2016-08-01T22:00:00+08:00</published><updated>2016-08-01T22:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2016-08-01:/2016/08/hello-world/</id><summary type="html">&lt;p&gt;Hello World! First blog post&lt;/p&gt;</summary><content type="html">&lt;p&gt;Hello World. I've been meaning to start a blog for a while but never got around
+&lt;/pre&gt;&lt;/div&gt;</content><category term="security"></category></entry><entry><title>Hello World</title><link href="https://blog.perfinion.com/2016/08/hello-world/" rel="alternate"></link><published>2016-08-01T22:00:00+08:00</published><updated>2016-08-01T22:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2016-08-01:/2016/08/hello-world/</id><summary type="html">Hello World. I've been meaning to start a blog for a while but never got around
+to it. Russell Coker posted on the SELinux mailing list yesterday asking about
+Planet SELinux so I figured now is as good a time as any for starting one.</summary><content type="html">&lt;p&gt;Hello World. I've been meaning to start a blog for a while but never got around
 to it. Russell Coker posted on the SELinux mailing list yesterday asking about
 Planet SELinux so I figured now is as good a time as any for starting one.&lt;/p&gt;</content><category term="misc"></category></entry></feed>
