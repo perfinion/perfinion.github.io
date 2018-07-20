@@ -1,5 +1,289 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Perfinion's Blog</title><link href="https://blog.perfinion.com/" rel="alternate"></link><link href="https://blog.perfinion.com/feed/atom.xml" rel="self"></link><id>https://blog.perfinion.com/</id><updated>2018-05-04T00:00:00+08:00</updated><entry><title>FOSSASIA 2018 - SELinux Policy Development</title><link href="https://blog.perfinion.com/2018/05/fossasia-2018-selinux-policy-dev/" rel="alternate"></link><published>2018-05-04T00:00:00+08:00</published><updated>2018-05-04T00:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2018-05-04:/2018/05/fossasia-2018-selinux-policy-dev/</id><summary type="html">A month ago was FOSSASIA 2018 and I got to give another talk about SELinux.
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Perfinion's Blog</title><link href="https://blog.perfinion.com/" rel="alternate"></link><link href="https://blog.perfinion.com/feed/atom.xml" rel="self"></link><id>https://blog.perfinion.com/</id><updated>2018-07-20T12:00:00+08:00</updated><entry><title>Tensorflow - Your CPU supports instructions that this binary was not compiled to use</title><link href="https://blog.perfinion.com/2018/07/tensorflow-cpu-supports-instructions/" rel="alternate"></link><published>2018-07-20T12:00:00+08:00</published><updated>2018-07-20T12:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2018-07-20:/2018/07/tensorflow-cpu-supports-instructions/</id><summary type="html">&lt;p&gt;If you've installed TensorFlow from pip, you've probably come across this message:&lt;/p&gt;
+tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports
+instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+&lt;/pre&gt;
+
+
+&lt;p&gt;Well, I did too and it got me wondering how much of a difference those
+instructions end up making. People often say GPUs are required for any
+non-trivial ML work so I wanted to see if that was really true. I decided to
+delve in and optimize TensorFlow and make it faster on my machine. I gave a
+talk about this yesterday, the slides will be attached at the end as well.&lt;/p&gt;
+</summary><content type="html">&lt;p&gt;If you've installed TensorFlow from pip, you've probably come across this message:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports
+instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Well, I did too and it got me wondering how much of a difference those
+instructions end up making. People often say GPUs are required for any
+non-trivial ML work so I wanted to see if that was really true. I decided to
+delve in and optimize TensorFlow and make it faster on my machine. I gave a
+talk about this yesterday, the slides will be attached at the end as well.&lt;/p&gt;
+
+
+&lt;p&gt;I recently packaged TensorFlow on Gentoo (you can install it with &lt;code&gt;# emerge
+tensorflow&lt;/code&gt;) and decided to compare it to the pip package to see how much of a
+difference there would be. For the tests I didn't just want MNIST, I wanted
+something a bit larger. I found the &lt;a href="https://github.com/tensorflow/models/tree/master/official/resnet"&gt;TensorFlow official models
+repo&lt;/a&gt; and
+thought ResNet would be big enough for some tests. ImageNet was a huge download
+so I used CIFAR-10 instead. I also did a second smaller benchmark of a simple
+&lt;code&gt;tf.matmul()&lt;/code&gt; for a few different sized matrices. Matrix multiplication is
+one of the most key parts of ML so I thought that would be interesting to see.&lt;/p&gt;
+&lt;h1&gt;Benchmarks&lt;/h1&gt;
+&lt;p&gt;I tested this on both my powerful workstation and my old laptop to get the
+spectrum of high-end and low-end. My workstation has an AMD Threadripper 1950x:
+16 core / 32 thread, 3.4GHz base, 40MB cache total, and 32GB RAM. I also
+recently got an Nvidia 1080Ti from the guys at &lt;a href="https://lambdal.com/"&gt;Lambda Labs&lt;/a&gt;
+to get TF properly working on Gentoo with CUDA so I'll also be comparing that.
+My laptop is a Haswell Core i7-4600U: 2.1GHz, 2 core / 4 thread, 4MB cache
+total, and 12GB RAM and no GPU. All the tests were with TensorFlow v1.9.0: from
+pip, built with portage, and built myself for GPU. The prebuilt pip packages
+for tensorflow-gpu required an older version of CUDA than the one I had so I
+didn't test that.&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th align="right"&gt;Steps&lt;/th&gt;
+&lt;th&gt;100&lt;/th&gt;
+&lt;th&gt;200&lt;/th&gt;
+&lt;th&gt;300&lt;/th&gt;
+&lt;th&gt;400&lt;/th&gt;
+&lt;th&gt;500&lt;/th&gt;
+&lt;th&gt;600&lt;/th&gt;
+&lt;th&gt;700&lt;/th&gt;
+&lt;th&gt;800&lt;/th&gt;
+&lt;th&gt;900&lt;/th&gt;
+&lt;th&gt;AVG&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td align="right"&gt;&lt;strong&gt;PIP&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;816.75&lt;/td&gt;
+&lt;td&gt;811.48&lt;/td&gt;
+&lt;td&gt;808.75&lt;/td&gt;
+&lt;td&gt;817.62&lt;/td&gt;
+&lt;td&gt;817.94&lt;/td&gt;
+&lt;td&gt;812.81&lt;/td&gt;
+&lt;td&gt;810.61&lt;/td&gt;
+&lt;td&gt;812.37&lt;/td&gt;
+&lt;td&gt;811.00&lt;/td&gt;
+&lt;td&gt;813.26&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align="right"&gt;&lt;strong&gt;SRC&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;632.77&lt;/td&gt;
+&lt;td&gt;630.48&lt;/td&gt;
+&lt;td&gt;625.17&lt;/td&gt;
+&lt;td&gt;625.16&lt;/td&gt;
+&lt;td&gt;617.06&lt;/td&gt;
+&lt;td&gt;611.70&lt;/td&gt;
+&lt;td&gt;616.83&lt;/td&gt;
+&lt;td&gt;614.71&lt;/td&gt;
+&lt;td&gt;618.39&lt;/td&gt;
+&lt;td&gt;621.36&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align="right"&gt;&lt;strong&gt;GPU&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;8.789&lt;/td&gt;
+&lt;td&gt;8.681&lt;/td&gt;
+&lt;td&gt;8.471&lt;/td&gt;
+&lt;td&gt;9.173&lt;/td&gt;
+&lt;td&gt;8.114&lt;/td&gt;
+&lt;td&gt;8.148&lt;/td&gt;
+&lt;td&gt;8.387&lt;/td&gt;
+&lt;td&gt;8.194&lt;/td&gt;
+&lt;td&gt;8.607&lt;/td&gt;
+&lt;td&gt;8.507&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;Times are in seconds per 100 steps on the cifar10 benchmark.&lt;/p&gt;
+&lt;p&gt;PIP / SRC = &lt;strong&gt;1.31x speedup!&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Thats pretty good. Obviously the GPU is way faster but just building TensorFlow
+yourself already gives huge gains. This is a significant enough speedup that if
+you want to train a big model, you could start from scratch and compile TF then
+start training and still be done before just using the pip package. Sort of the
+modern version of Abraham Lincoln's quote: "Give me six hours to chop down a
+tree and I will spend the first four sharpening the axe."&lt;/p&gt;
+&lt;p&gt;The matrix multiplication benchmark was a tf.matmul() with sizes from 256x256
+up to 16384x16384.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Threadripper workstation:&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="Matrix Multiplication on Threadripper" src="https://blog.perfinion.com/2018/07/tensorflow-cpu-supports-instructions/files/2018/tensorflow-matmul-threadripper.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Haswell Laptop:&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="Matrix Multiplication on Haswell" src="https://blog.perfinion.com/2018/07/tensorflow-cpu-supports-instructions/files/2018/tensorflow-matmul-haswell.png"&gt;&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;&lt;/th&gt;
+&lt;th&gt;Threadripper&lt;/th&gt;
+&lt;th&gt;Haswell&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;PIP&lt;/td&gt;
+&lt;td&gt;519.9 GFLOPs&lt;/td&gt;
+&lt;td&gt;86.2 GFLOPs&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;SRC&lt;/td&gt;
+&lt;td&gt;631.2 GFLOPs&lt;/td&gt;
+&lt;td&gt;140.6 GFLOPs&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;GPU&lt;/td&gt;
+&lt;td&gt;11657 GFLOPs&lt;/td&gt;
+&lt;td&gt;N/A&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;Threadripper workstation optimized speedup = &lt;strong&gt;1.22x!&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Haswell laptop optimized speedup = &lt;strong&gt;1.63x!&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;The workstation had a decent speed jump but the laptop's jump was HUGE. The
+Threadripper seemed fastest at 4k matrix sizes and laptop was fastest at 2k so
+those are what I used. For 4k sizes on the laptop, optimizing was even better
+at around 2x.&lt;/p&gt;
+&lt;h1&gt;CPU Extensions&lt;/h1&gt;
+&lt;p&gt;So clearly this makes a huge difference, but why? To answer that we need to go
+back through computer history a little. Originally CPUs processed things one at
+a time. If you need to multiply many numbers you load the first two, multiply,
+save them. Load the next two, multiply, save. repeat over. and over. This is
+called SISD: Single Instruction, Single Data. This was fine decades ago when
+Moore's Law and Dennard Scaling worked. In the good old days, computers would
+double in power every year. Then Moore's Law and Dennard Scaling started to
+stop working and we moved to the multicore era. Things were still mostly okay,
+a doubling in compute power would only take 3.5 years. Now all of that is
+mostly over so we get closer to 3% increase per year.&lt;/p&gt;
+&lt;p&gt;To get around these limitations, the hardware manufacturers started making
+specialized extensions to the processors that could process many things at one.
+This was called Single Instruction, Multiple Data. Originally they were used
+for multimedia because video needs to play at 24 fps and computers were slow
+originally. Over time these extensions could do more so now with AVX2 and FMA a
+processor can do 256-bits worth of calculations at once.&lt;/p&gt;
+&lt;p&gt;With &lt;a href="https://en.wikipedia.org/wiki/Advanced_Vector_Extensions"&gt;AVX2 (Advanced Vector
+Extensions)&lt;/a&gt; a CPU
+can multiply two sets of 8 numbers all at once. &lt;a href="https://en.wikipedia.org/wiki/Multiply%E2%80%93accumulate_operation#Fused_multiply%E2%80%93add"&gt;FMA (Fused
+Multiply-Add)&lt;/a&gt;
+is even better, it can do &lt;code&gt;a = a * b + c&lt;/code&gt; all at once where each of a, b, c are
+8 32-bit floats. With FMA, AMD processors can theoretically do 16 FLOPs/cycle
+and Intel processors can do double that. For my workstation CPU this works out
+to be theoretically &lt;code&gt;16 FLOPs/cycle * 3.4 GHz * 16 cores = 870 GFLOPs&lt;/code&gt;, so
+the benchmark is pretty good considering thats the absolute maximum theoretical
+limit.&lt;/p&gt;
+&lt;p&gt;AVX has been in processors since ~2011 while AVX2 and FMA have been in
+processors since Intel Haswell and AMD Piledriver released in ~2012/2013. That
+means if your computer is less than 5 years old you almost definitely have
+support for these extensions already. Since TensorFlow 1.6, the pre-built pip
+packages use AVX but not AVX2 or FMA yet. The point of the pip packages is to
+work easily, not to give the absolute best performance so not including support
+for AVX2 and FMA makes sense, it just means for best performance you should
+build it yourself.&lt;/p&gt;
+&lt;p&gt;These extensions can be enabled with GCC using the &lt;code&gt;-mavx2&lt;/code&gt; and &lt;code&gt;-mfma&lt;/code&gt;
+flags. There are other GCC optimization flags that are helpful too: &lt;code&gt;gcc
+-O&amp;lt;number&amp;gt;&lt;/code&gt; (O the letter, not the number).&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;-O0: Turns off optimization entirely. Fast compile times, good for debugging.
+  This is the default if you don't specify any which you probably don't want.&lt;/li&gt;
+&lt;li&gt;-O1: Basic optimization level.&lt;/li&gt;
+&lt;li&gt;-O2: Recommended for most things. SSE / AVX may be used, but not fully.&lt;/li&gt;
+&lt;li&gt;-O3: Highest optimization possible. Also vectorizes loops, can use all AVX
+  registers.&lt;/li&gt;
+&lt;li&gt;-Os: Small size. Basically enables -O2 options which do not increase size.
+  Can be useful for machines that have limited storage and/or CPUs with small
+  cache sizes.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;There are a lot of these extensions and knowing exactly which to use is
+complicated so luckily GCC can figure it out on its own. If you are building
+TensorFlow on the same machine that will be running it you can just use &lt;code&gt;-O3
+-march=native&lt;/code&gt;. If you are building on a different machine, you can use the
+command below to see which flags GCC would set and then pass them when
+configuring TF. The Gentoo wiki also has some &lt;a href="https://wiki.gentoo.org/wiki/Safe_CFLAGS"&gt;safe
+CFLAGS&lt;/a&gt; for common CPU types.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c c-Singleline"&gt;# This is the output on my machine:&lt;/span&gt;
+$ &lt;span class="n"&gt;gcc&lt;/span&gt; -&lt;span class="n"&gt;march&lt;/span&gt;=&lt;span class="n"&gt;native&lt;/span&gt; -&lt;span class="n"&gt;E&lt;/span&gt; -&lt;span class="n"&gt;v&lt;/span&gt; - &lt;span class="s"&gt;&amp;lt;/dev/null 2&amp;gt;&lt;/span&gt;&lt;span class="nv"&gt;&amp;amp;1&lt;/span&gt; | &lt;span class="nb"&gt;grep&lt;/span&gt; &lt;span class="n"&gt;cc1&lt;/span&gt;
+/&lt;span class="n"&gt;usr&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;libexec&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;gcc&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;x86_64-pc-linux-gnu&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mf"&gt;7.3.0&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;cc1&lt;/span&gt; -&lt;span class="n"&gt;E&lt;/span&gt; -&lt;span class="n"&gt;quiet&lt;/span&gt; -&lt;span class="n"&gt;v&lt;/span&gt; - -&lt;span class="n"&gt;march&lt;/span&gt;=&lt;span class="n"&gt;znver1&lt;/span&gt;
+-&lt;span class="n"&gt;mmmx&lt;/span&gt; -&lt;span class="n"&gt;mno-3dnow&lt;/span&gt; -&lt;span class="n"&gt;msse&lt;/span&gt; -&lt;span class="n"&gt;msse2&lt;/span&gt; -&lt;span class="n"&gt;msse3&lt;/span&gt; -&lt;span class="n"&gt;mssse3&lt;/span&gt; -&lt;span class="n"&gt;msse4a&lt;/span&gt; -&lt;span class="n"&gt;mcx16&lt;/span&gt; -&lt;span class="n"&gt;msahf&lt;/span&gt; -&lt;span class="n"&gt;mmovbe&lt;/span&gt;
+-&lt;span class="n"&gt;maes&lt;/span&gt; -&lt;span class="n"&gt;msha&lt;/span&gt; -&lt;span class="n"&gt;mpclmul&lt;/span&gt; -&lt;span class="n"&gt;mpopcnt&lt;/span&gt; -&lt;span class="n"&gt;mabm&lt;/span&gt; -&lt;span class="n"&gt;mno-lwp&lt;/span&gt; -&lt;span class="n"&gt;mfma&lt;/span&gt; -&lt;span class="n"&gt;mno-fma4&lt;/span&gt; -&lt;span class="n"&gt;mno-xop&lt;/span&gt; -&lt;span class="n"&gt;mbmi&lt;/span&gt;
+-&lt;span class="n"&gt;mno-sgx&lt;/span&gt; -&lt;span class="n"&gt;mbmi2&lt;/span&gt; -&lt;span class="n"&gt;mno-tbm&lt;/span&gt; -&lt;span class="n"&gt;mavx&lt;/span&gt; -&lt;span class="n"&gt;mavx2&lt;/span&gt; -&lt;span class="n"&gt;msse4&lt;/span&gt;&lt;span class="mf"&gt;.2&lt;/span&gt; -&lt;span class="n"&gt;msse4&lt;/span&gt;&lt;span class="mf"&gt;.1&lt;/span&gt; -&lt;span class="n"&gt;mlzcnt&lt;/span&gt; -&lt;span class="n"&gt;mno-rtm&lt;/span&gt;
+-&lt;span class="n"&gt;mno-hle&lt;/span&gt; -&lt;span class="n"&gt;mrdrnd&lt;/span&gt; -&lt;span class="n"&gt;mf16c&lt;/span&gt; -&lt;span class="n"&gt;mfsgsbase&lt;/span&gt; -&lt;span class="n"&gt;mrdseed&lt;/span&gt; -&lt;span class="n"&gt;mprfchw&lt;/span&gt; -&lt;span class="n"&gt;madx&lt;/span&gt; -&lt;span class="n"&gt;mfxsr&lt;/span&gt; -&lt;span class="n"&gt;mxsave&lt;/span&gt;
+-&lt;span class="n"&gt;mxsaveopt&lt;/span&gt; -&lt;span class="n"&gt;mno-avx512f&lt;/span&gt; -&lt;span class="n"&gt;mno-avx512er&lt;/span&gt; -&lt;span class="n"&gt;mno-avx512cd&lt;/span&gt; -&lt;span class="n"&gt;mno-avx512pf&lt;/span&gt;
+-&lt;span class="n"&gt;mno-prefetchwt1&lt;/span&gt; -&lt;span class="n"&gt;mclflushopt&lt;/span&gt; -&lt;span class="n"&gt;mxsavec&lt;/span&gt; -&lt;span class="n"&gt;mxsaves&lt;/span&gt; -&lt;span class="n"&gt;mno-avx512dq&lt;/span&gt; -&lt;span class="n"&gt;mno-avx512bw&lt;/span&gt;
+-&lt;span class="n"&gt;mno-avx512vl&lt;/span&gt; -&lt;span class="n"&gt;mno-avx512ifma&lt;/span&gt; -&lt;span class="n"&gt;mno-avx512vbmi&lt;/span&gt; -&lt;span class="n"&gt;mno-avx5124fmaps&lt;/span&gt;
+-&lt;span class="n"&gt;mno-avx5124vnniw&lt;/span&gt; -&lt;span class="n"&gt;mno-clwb&lt;/span&gt; -&lt;span class="n"&gt;mmwaitx&lt;/span&gt; -&lt;span class="n"&gt;mclzero&lt;/span&gt; -&lt;span class="n"&gt;mno-pku&lt;/span&gt; -&lt;span class="n"&gt;mno-rdpid&lt;/span&gt; --&lt;span class="n"&gt;param&lt;/span&gt;
+&lt;span class="n"&gt;l1-cache-size&lt;/span&gt;=&lt;span class="mi"&gt;32&lt;/span&gt; --&lt;span class="n"&gt;param&lt;/span&gt; &lt;span class="n"&gt;l1-cache-line-size&lt;/span&gt;=&lt;span class="mi"&gt;64&lt;/span&gt; --&lt;span class="n"&gt;param&lt;/span&gt; &lt;span class="n"&gt;l2-cache-size&lt;/span&gt;=&lt;span class="mi"&gt;512&lt;/span&gt;
+-&lt;span class="n"&gt;mtune&lt;/span&gt;=&lt;span class="n"&gt;znver1&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h1&gt;Bazel&lt;/h1&gt;
+&lt;p&gt;TensorFlow is built using &lt;a href="https://bazel.build"&gt;Bazel&lt;/a&gt; a build system Open
+Sourced by Google based on their internal one called Blaze. It is designed to
+be fast, scalable, and correct. Fast and scalable I agree with. It is correct
+for how Google uses it, which is not quite as friendly for how normal distros
+build things, though features to make it easier to use for distros are on the
+roadmap.&lt;/p&gt;
+&lt;p&gt;Once you get used to it, its fairly simple and powerful. The root of the repo
+contains a WORKSPACE file, and build targets are declared in BUILD files. There
+are tons of docs on the site, but to just build TensorFlow you just need to
+know commands look like: &lt;code&gt;$ bazel build //main:helloworld&lt;/code&gt;. No, that is not a
+typo. Yes, there really are two slashes at the front.&lt;/p&gt;
+&lt;p&gt;Building TensorFlow is fairly simple, full docs are
+&lt;a href="https://www.tensorflow.org/install/install_sources"&gt;here&lt;/a&gt; but here's a
+summary.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ git clone https://github.com/tensorflow/tensorflow.git
+$ &lt;span class="nb"&gt;cd&lt;/span&gt; tensorflow
+$ git checkout v1.9.0
+$ ./configure
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Configure will ask many questions, it will build faster if you turn off the
+ones you don't need. &lt;code&gt;./configure&lt;/code&gt; is a python script, it has nothing to do
+with autoconf. The more important ones to look for are:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Do you wish to build TensorFlow with CUDA support? [y/N]: n
+No CUDA support will be enabled for TensorFlow.
+
+Please specify optimization flags to use during compilation when bazel option &amp;quot;--config=opt&amp;quot; is specified [Default is -march=native]: -O3 -march=native
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Turn CUDA off if you don't have a GPU, it takes ages to build. The optimization
+one is where you give it the flags we discussed above. Once its all ready, just
+run:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ bazel build --config&lt;span class="o"&gt;=&lt;/span&gt;opt &lt;span class="se"&gt;\&lt;/span&gt;
+//tensorflow/tools/pip_package:build_pip_package &lt;span class="se"&gt;\&lt;/span&gt;
+//tensorflow:libtensorflow_framework.so &lt;span class="se"&gt;\&lt;/span&gt;
+//tensorflow:libtensorflow.so
+
+$ bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tf/
+$ pip install /tmp/tf/tensorflow-*.whl
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The &lt;code&gt;--config=opt&lt;/code&gt; flag is important otherwise it won't use the optimization
+flags you specified. Alternatively, I've done all the work already on Gentoo so
+just use: &lt;code&gt;# emerge tensorflow&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;If you're using GPUs for TensorFlow you may be wondering why bother with all
+this? TensorFlow's gpu packages currently are built for CUDA 9.0, the latest is
+9.2. Nvidia GPUs have "Compute Capabilities" which should ideally match your
+card. Anything lower will work but you may be missing out features. The
+pre-built ones are for "3.5,5.2", you can see what level your card is
+&lt;a href="https://developer.nvidia.com/cuda-gpus"&gt;here&lt;/a&gt;. Also, not everything can run on
+a GPU, the input pipeline is all on the CPU so especially if you're training
+with lots of fast cards, you'll want the CPU portions to be as optimized as
+possible to keep up. When using the Gentoo package, TF will try to autodetect
+which capabilities your card has. You can set
+&lt;code&gt;TF_CUDA_COMPUTE_CAPABILITIES="6.1"&lt;/code&gt; in your make.conf to force a specific
+version.&lt;/p&gt;
+&lt;p&gt;The slides from my talk are
+&lt;a href="https://blog.perfinion.com/2018/07/tensorflow-cpu-supports-instructions/files/2018/Tensorflow_2018_Optimizing_Your_Tensorflow.pdf"&gt;here&lt;/a&gt; and
+unfortunately, it was not recorded. The matmul benchmark is on
+&lt;a href="https://github.com/perfinion/tfbench"&gt;Github&lt;/a&gt;. I'd be interested to see
+results from running it on other systems too.&lt;/p&gt;</content><category term="talks"></category><category term="tensorflow"></category></entry><entry><title>FOSSASIA 2018 - SELinux Policy Development</title><link href="https://blog.perfinion.com/2018/05/fossasia-2018-selinux-policy-dev/" rel="alternate"></link><published>2018-05-04T00:00:00+08:00</published><updated>2018-05-04T00:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2018-05-04:/2018/05/fossasia-2018-selinux-policy-dev/</id><summary type="html">A month ago was FOSSASIA 2018 and I got to give another talk about SELinux.
 Last years talk was only about the basics of how things SELinux works and
 labels and allow rules. This year covered more of the policy side of things. I
 went over now to write a Reference Policy module and did a quick demo.</summary><content type="html">&lt;p&gt;A month ago was FOSSASIA 2018 and I got to give another talk about SELinux.

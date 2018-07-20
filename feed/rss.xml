@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0"><channel><title>Perfinion's Blog</title><link>https://blog.perfinion.com/</link><description></description><lastBuildDate>Fri, 04 May 2018 00:00:00 +0800</lastBuildDate><item><title>FOSSASIA 2018 - SELinux Policy Development</title><link>https://blog.perfinion.com/2018/05/fossasia-2018-selinux-policy-dev/</link><description>A month ago was FOSSASIA 2018 and I got to give another talk about SELinux.
+<rss version="2.0"><channel><title>Perfinion's Blog</title><link>https://blog.perfinion.com/</link><description></description><lastBuildDate>Fri, 20 Jul 2018 12:00:00 +0800</lastBuildDate><item><title>Tensorflow - Your CPU supports instructions that this binary was not compiled to use</title><link>https://blog.perfinion.com/2018/07/tensorflow-cpu-supports-instructions/</link><description>&lt;p&gt;If you've installed TensorFlow from pip, you've probably come across this message:&lt;/p&gt;
+tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports
+instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+&lt;/pre&gt;
+
+
+&lt;p&gt;Well, I did too and it got me wondering how much of a difference those
+instructions end up making. People often say GPUs are required for any
+non-trivial ML work so I wanted to see if that was really true. I decided to
+delve in and optimize TensorFlow and make it faster on my machine. I gave a
+talk about this yesterday, the slides will be attached at the end as well.&lt;/p&gt;
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Jason Zaman</dc:creator><pubDate>Fri, 20 Jul 2018 12:00:00 +0800</pubDate><guid isPermaLink="false">tag:blog.perfinion.com,2018-07-20:/2018/07/tensorflow-cpu-supports-instructions/</guid><category>talks</category><category>tensorflow</category></item><item><title>FOSSASIA 2018 - SELinux Policy Development</title><link>https://blog.perfinion.com/2018/05/fossasia-2018-selinux-policy-dev/</link><description>A month ago was FOSSASIA 2018 and I got to give another talk about SELinux.
 Last years talk was only about the basics of how things SELinux works and
 labels and allow rules. This year covered more of the policy side of things. I
 went over now to write a Reference Policy module and did a quick demo.</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Jason Zaman</dc:creator><pubDate>Fri, 04 May 2018 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:blog.perfinion.com,2018-05-04:/2018/05/fossasia-2018-selinux-policy-dev/</guid><category>selinux</category><category>talks</category><category>fossasia</category></item><item><title>FOSSASIA 2017 - SELinux Introduction talk</title><link>https://blog.perfinion.com/2017/03/fossasia-2017-selinux-introduction/</link><description>FOSSASIA 2017 was this weekend and I gave an introductory talk on SELinux.

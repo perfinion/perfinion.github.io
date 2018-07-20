@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: http://ogp.me/ns# fb: https://www.facebook.com/2008/fbml">
+<head>
+    <title>Tensorflow - Your CPU supports instructions that this binary was not compiled to use - Perfinion's Blog</title>
+    <!-- Using the latest rendering mode for IE -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+
+<link rel="canonical" href="https://blog.perfinion.com/2018/07/tensorflow-cpu-supports-instructions/">
+
+        <meta name="author" content="Jason Zaman" />
+        <meta name="keywords" content="talks,tensorflow" />
+        <meta name="description" content="If you&#39;ve installed TensorFlow from pip, you&#39;ve probably come across this message: tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA Well, I did too and it got me wondering how much of a difference those instructions end up making. People often say GPUs are required for any non-trivial ML work so I wanted to see if that was really true. I decided to delve in and optimize TensorFlow and make it faster on my machine. I gave a talk about this yesterday, the slides will be attached at the end as well." />
+
+        <meta property="og:site_name" content="Perfinion's Blog" />
+        <meta property="og:type" content="article"/>
+        <meta property="og:title" content="Tensorflow - Your CPU supports instructions that this binary was not compiled to use"/>
+        <meta property="og:url" content="https://blog.perfinion.com/2018/07/tensorflow-cpu-supports-instructions/"/>
+        <meta property="og:description" content="If you&#39;ve installed TensorFlow from pip, you&#39;ve probably come across this message: tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA Well, I did too and it got me wondering how much of a difference those instructions end up making. People often say GPUs are required for any non-trivial ML work so I wanted to see if that was really true. I decided to delve in and optimize TensorFlow and make it faster on my machine. I gave a talk about this yesterday, the slides will be attached at the end as well."/>
+        <meta property="article:published_time" content="2018-07-20" />
+            <meta property="article:section" content="Gentoo" />
+            <meta property="article:tag" content="talks" />
+            <meta property="article:tag" content="tensorflow" />
+            <meta property="article:author" content="Jason Zaman" />
+
+
+
+    <!-- Bootstrap -->
+        <link rel="stylesheet" href="https://blog.perfinion.com/theme/css/bootstrap.simplex.min.css" type="text/css"/>
+    <link href="https://blog.perfinion.com/theme/css/font-awesome.min.css" rel="stylesheet">
+
+    <link href="https://blog.perfinion.com/theme/css/pygments/default.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://blog.perfinion.com/theme/css/style.css" type="text/css"/>
+        <link href="https://blog.perfinion.com/static/custom.css" rel="stylesheet">
+
+        <link href="https://blog.perfinion.com/feed/all.atom.xml" type="application/atom+xml" rel="alternate"
+              title="Perfinion's Blog ATOM Feed"/>
+
+        <link href="https://blog.perfinion.com/feed/all.rss.xml" type="application/rss+xml" rel="alternate"
+              title="Perfinion's Blog RSS Feed"/>
+
+
+        <link href="https://blog.perfinion.com/category/gentoo/feed/atom.xml" type="application/atom+xml" rel="alternate"
+              title="Perfinion's Blog Gentoo ATOM Feed"/>
+
+</head>
+<body>
+
+<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <a href="https://blog.perfinion.com/" class="navbar-brand">
+Perfinion's Blog            </a>
+        </div>
+        <div class="collapse navbar-collapse navbar-ex1-collapse">
+            <ul class="nav navbar-nav">
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+</div> <!-- /.navbar -->
+
+<!-- Banner -->
+<!-- End Banner -->
+
+<!-- Content Container -->
+<div class="container">
+    <div class="row">
+        <div class="col-sm-9">
+    <section id="content">
+        <article>
+            <header class="page-header">
+                <h1>
+                    <a href="https://blog.perfinion.com/2018/07/tensorflow-cpu-supports-instructions/"
+                       rel="bookmark"
+                       title="Permalink to Tensorflow - Your CPU supports instructions that this binary was not compiled to use">
+                        Tensorflow - Your CPU supports instructions that this binary was not compiled to use
+                    </a>
+                </h1>
+            </header>
+            <div class="entry-content">
+                <div class="panel">
+                    <div class="panel-body">
+<footer class="post-info">
+    <span class="label label-default">Date</span>
+    <span class="published">
+        <i class="fa fa-calendar"></i><time datetime="2018-07-20T12:00:00+08:00"> Fri 20 July 2018</time>
+    </span>
+
+
+
+
+
+<span class="label label-default">Tags</span>
+	<a href="https://blog.perfinion.com/tag/talks/">talks</a>
+        /
+	<a href="https://blog.perfinion.com/tag/tensorflow/">tensorflow</a>
+    
+</footer><!-- /.post-info -->                    </div>
+                </div>
+                <p>If you've installed TensorFlow from pip, you've probably come across this message:</p>
+<div class="highlight"><pre><span></span>tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports
+instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+</pre></div>
+
+
+<p>Well, I did too and it got me wondering how much of a difference those
+instructions end up making. People often say GPUs are required for any
+non-trivial ML work so I wanted to see if that was really true. I decided to
+delve in and optimize TensorFlow and make it faster on my machine. I gave a
+talk about this yesterday, the slides will be attached at the end as well.</p>
+
+
+<p>I recently packaged TensorFlow on Gentoo (you can install it with <code># emerge
+tensorflow</code>) and decided to compare it to the pip package to see how much of a
+difference there would be. For the tests I didn't just want MNIST, I wanted
+something a bit larger. I found the <a href="https://github.com/tensorflow/models/tree/master/official/resnet">TensorFlow official models
+repo</a> and
+thought ResNet would be big enough for some tests. ImageNet was a huge download
+so I used CIFAR-10 instead. I also did a second smaller benchmark of a simple
+<code>tf.matmul()</code> for a few different sized matrices. Matrix multiplication is
+one of the most key parts of ML so I thought that would be interesting to see.</p>
+<h1>Benchmarks</h1>
+<p>I tested this on both my powerful workstation and my old laptop to get the
+spectrum of high-end and low-end. My workstation has an AMD Threadripper 1950x:
+16 core / 32 thread, 3.4GHz base, 40MB cache total, and 32GB RAM. I also
+recently got an Nvidia 1080Ti from the guys at <a href="https://lambdal.com/">Lambda Labs</a>
+to get TF properly working on Gentoo with CUDA so I'll also be comparing that.
+My laptop is a Haswell Core i7-4600U: 2.1GHz, 2 core / 4 thread, 4MB cache
+total, and 12GB RAM and no GPU. All the tests were with TensorFlow v1.9.0: from
+pip, built with portage, and built myself for GPU. The prebuilt pip packages
+for tensorflow-gpu required an older version of CUDA than the one I had so I
+didn't test that.</p>
+<table>
+<thead>
+<tr>
+<th align="right">Steps</th>
+<th>100</th>
+<th>200</th>
+<th>300</th>
+<th>400</th>
+<th>500</th>
+<th>600</th>
+<th>700</th>
+<th>800</th>
+<th>900</th>
+<th>AVG</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><strong>PIP</strong></td>
+<td>816.75</td>
+<td>811.48</td>
+<td>808.75</td>
+<td>817.62</td>
+<td>817.94</td>
+<td>812.81</td>
+<td>810.61</td>
+<td>812.37</td>
+<td>811.00</td>
+<td>813.26</td>
+</tr>
+<tr>
+<td align="right"><strong>SRC</strong></td>
+<td>632.77</td>
+<td>630.48</td>
+<td>625.17</td>
+<td>625.16</td>
+<td>617.06</td>
+<td>611.70</td>
+<td>616.83</td>
+<td>614.71</td>
+<td>618.39</td>
+<td>621.36</td>
+</tr>
+<tr>
+<td align="right"><strong>GPU</strong></td>
+<td>8.789</td>
+<td>8.681</td>
+<td>8.471</td>
+<td>9.173</td>
+<td>8.114</td>
+<td>8.148</td>
+<td>8.387</td>
+<td>8.194</td>
+<td>8.607</td>
+<td>8.507</td>
+</tr>
+</tbody>
+</table>
+<p>Times are in seconds per 100 steps on the cifar10 benchmark.</p>
+<p>PIP / SRC = <strong>1.31x speedup!</strong></p>
+<p>Thats pretty good. Obviously the GPU is way faster but just building TensorFlow
+yourself already gives huge gains. This is a significant enough speedup that if
+you want to train a big model, you could start from scratch and compile TF then
+start training and still be done before just using the pip package. Sort of the
+modern version of Abraham Lincoln's quote: "Give me six hours to chop down a
+tree and I will spend the first four sharpening the axe."</p>
+<p>The matrix multiplication benchmark was a tf.matmul() with sizes from 256x256
+up to 16384x16384.</p>
+<p><strong>Threadripper workstation:</strong></p>
+<p><img alt="Matrix Multiplication on Threadripper" src="https://blog.perfinion.com/2018/07/tensorflow-cpu-supports-instructions/files/2018/tensorflow-matmul-threadripper.png"></p>
+<p><strong>Haswell Laptop:</strong></p>
+<p><img alt="Matrix Multiplication on Haswell" src="https://blog.perfinion.com/2018/07/tensorflow-cpu-supports-instructions/files/2018/tensorflow-matmul-haswell.png"></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Threadripper</th>
+<th>Haswell</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PIP</td>
+<td>519.9 GFLOPs</td>
+<td>86.2 GFLOPs</td>
+</tr>
+<tr>
+<td>SRC</td>
+<td>631.2 GFLOPs</td>
+<td>140.6 GFLOPs</td>
+</tr>
+<tr>
+<td>GPU</td>
+<td>11657 GFLOPs</td>
+<td>N/A</td>
+</tr>
+</tbody>
+</table>
+<p>Threadripper workstation optimized speedup = <strong>1.22x!</strong></p>
+<p>Haswell laptop optimized speedup = <strong>1.63x!</strong></p>
+<p>The workstation had a decent speed jump but the laptop's jump was HUGE. The
+Threadripper seemed fastest at 4k matrix sizes and laptop was fastest at 2k so
+those are what I used. For 4k sizes on the laptop, optimizing was even better
+at around 2x.</p>
+<h1>CPU Extensions</h1>
+<p>So clearly this makes a huge difference, but why? To answer that we need to go
+back through computer history a little. Originally CPUs processed things one at
+a time. If you need to multiply many numbers you load the first two, multiply,
+save them. Load the next two, multiply, save. repeat over. and over. This is
+called SISD: Single Instruction, Single Data. This was fine decades ago when
+Moore's Law and Dennard Scaling worked. In the good old days, computers would
+double in power every year. Then Moore's Law and Dennard Scaling started to
+stop working and we moved to the multicore era. Things were still mostly okay,
+a doubling in compute power would only take 3.5 years. Now all of that is
+mostly over so we get closer to 3% increase per year.</p>
+<p>To get around these limitations, the hardware manufacturers started making
+specialized extensions to the processors that could process many things at one.
+This was called Single Instruction, Multiple Data. Originally they were used
+for multimedia because video needs to play at 24 fps and computers were slow
+originally. Over time these extensions could do more so now with AVX2 and FMA a
+processor can do 256-bits worth of calculations at once.</p>
+<p>With <a href="https://en.wikipedia.org/wiki/Advanced_Vector_Extensions">AVX2 (Advanced Vector
+Extensions)</a> a CPU
+can multiply two sets of 8 numbers all at once. <a href="https://en.wikipedia.org/wiki/Multiply%E2%80%93accumulate_operation#Fused_multiply%E2%80%93add">FMA (Fused
+Multiply-Add)</a>
+is even better, it can do <code>a = a * b + c</code> all at once where each of a, b, c are
+8 32-bit floats. With FMA, AMD processors can theoretically do 16 FLOPs/cycle
+and Intel processors can do double that. For my workstation CPU this works out
+to be theoretically <code>16 FLOPs/cycle * 3.4 GHz * 16 cores = 870 GFLOPs</code>, so
+the benchmark is pretty good considering thats the absolute maximum theoretical
+limit.</p>
+<p>AVX has been in processors since ~2011 while AVX2 and FMA have been in
+processors since Intel Haswell and AMD Piledriver released in ~2012/2013. That
+means if your computer is less than 5 years old you almost definitely have
+support for these extensions already. Since TensorFlow 1.6, the pre-built pip
+packages use AVX but not AVX2 or FMA yet. The point of the pip packages is to
+work easily, not to give the absolute best performance so not including support
+for AVX2 and FMA makes sense, it just means for best performance you should
+build it yourself.</p>
+<p>These extensions can be enabled with GCC using the <code>-mavx2</code> and <code>-mfma</code>
+flags. There are other GCC optimization flags that are helpful too: <code>gcc
+-O&lt;number&gt;</code> (O the letter, not the number).</p>
+<ul>
+<li>-O0: Turns off optimization entirely. Fast compile times, good for debugging.
+  This is the default if you don't specify any which you probably don't want.</li>
+<li>-O1: Basic optimization level.</li>
+<li>-O2: Recommended for most things. SSE / AVX may be used, but not fully.</li>
+<li>-O3: Highest optimization possible. Also vectorizes loops, can use all AVX
+  registers.</li>
+<li>-Os: Small size. Basically enables -O2 options which do not increase size.
+  Can be useful for machines that have limited storage and/or CPUs with small
+  cache sizes.</li>
+</ul>
+<p>There are a lot of these extensions and knowing exactly which to use is
+complicated so luckily GCC can figure it out on its own. If you are building
+TensorFlow on the same machine that will be running it you can just use <code>-O3
+-march=native</code>. If you are building on a different machine, you can use the
+command below to see which flags GCC would set and then pass them when
+configuring TF. The Gentoo wiki also has some <a href="https://wiki.gentoo.org/wiki/Safe_CFLAGS">safe
+CFLAGS</a> for common CPU types.</p>
+<div class="highlight"><pre><span></span><span class="c c-Singleline"># This is the output on my machine:</span>
+$ <span class="n">gcc</span> -<span class="n">march</span>=<span class="n">native</span> -<span class="n">E</span> -<span class="n">v</span> - <span class="s">&lt;/dev/null 2&gt;</span><span class="nv">&amp;1</span> | <span class="nb">grep</span> <span class="n">cc1</span>
+/<span class="n">usr</span><span class="o">/</span><span class="n">libexec</span><span class="o">/</span><span class="n">gcc</span><span class="o">/</span><span class="n">x86_64-pc-linux-gnu</span><span class="o">/</span><span class="mf">7.3.0</span><span class="o">/</span><span class="n">cc1</span> -<span class="n">E</span> -<span class="n">quiet</span> -<span class="n">v</span> - -<span class="n">march</span>=<span class="n">znver1</span>
+-<span class="n">mmmx</span> -<span class="n">mno-3dnow</span> -<span class="n">msse</span> -<span class="n">msse2</span> -<span class="n">msse3</span> -<span class="n">mssse3</span> -<span class="n">msse4a</span> -<span class="n">mcx16</span> -<span class="n">msahf</span> -<span class="n">mmovbe</span>
+-<span class="n">maes</span> -<span class="n">msha</span> -<span class="n">mpclmul</span> -<span class="n">mpopcnt</span> -<span class="n">mabm</span> -<span class="n">mno-lwp</span> -<span class="n">mfma</span> -<span class="n">mno-fma4</span> -<span class="n">mno-xop</span> -<span class="n">mbmi</span>
+-<span class="n">mno-sgx</span> -<span class="n">mbmi2</span> -<span class="n">mno-tbm</span> -<span class="n">mavx</span> -<span class="n">mavx2</span> -<span class="n">msse4</span><span class="mf">.2</span> -<span class="n">msse4</span><span class="mf">.1</span> -<span class="n">mlzcnt</span> -<span class="n">mno-rtm</span>
+-<span class="n">mno-hle</span> -<span class="n">mrdrnd</span> -<span class="n">mf16c</span> -<span class="n">mfsgsbase</span> -<span class="n">mrdseed</span> -<span class="n">mprfchw</span> -<span class="n">madx</span> -<span class="n">mfxsr</span> -<span class="n">mxsave</span>
+-<span class="n">mxsaveopt</span> -<span class="n">mno-avx512f</span> -<span class="n">mno-avx512er</span> -<span class="n">mno-avx512cd</span> -<span class="n">mno-avx512pf</span>
+-<span class="n">mno-prefetchwt1</span> -<span class="n">mclflushopt</span> -<span class="n">mxsavec</span> -<span class="n">mxsaves</span> -<span class="n">mno-avx512dq</span> -<span class="n">mno-avx512bw</span>
+-<span class="n">mno-avx512vl</span> -<span class="n">mno-avx512ifma</span> -<span class="n">mno-avx512vbmi</span> -<span class="n">mno-avx5124fmaps</span>
+-<span class="n">mno-avx5124vnniw</span> -<span class="n">mno-clwb</span> -<span class="n">mmwaitx</span> -<span class="n">mclzero</span> -<span class="n">mno-pku</span> -<span class="n">mno-rdpid</span> --<span class="n">param</span>
+<span class="n">l1-cache-size</span>=<span class="mi">32</span> --<span class="n">param</span> <span class="n">l1-cache-line-size</span>=<span class="mi">64</span> --<span class="n">param</span> <span class="n">l2-cache-size</span>=<span class="mi">512</span>
+-<span class="n">mtune</span>=<span class="n">znver1</span>
+</pre></div>
+
+
+<h1>Bazel</h1>
+<p>TensorFlow is built using <a href="https://bazel.build">Bazel</a> a build system Open
+Sourced by Google based on their internal one called Blaze. It is designed to
+be fast, scalable, and correct. Fast and scalable I agree with. It is correct
+for how Google uses it, which is not quite as friendly for how normal distros
+build things, though features to make it easier to use for distros are on the
+roadmap.</p>
+<p>Once you get used to it, its fairly simple and powerful. The root of the repo
+contains a WORKSPACE file, and build targets are declared in BUILD files. There
+are tons of docs on the site, but to just build TensorFlow you just need to
+know commands look like: <code>$ bazel build //main:helloworld</code>. No, that is not a
+typo. Yes, there really are two slashes at the front.</p>
+<p>Building TensorFlow is fairly simple, full docs are
+<a href="https://www.tensorflow.org/install/install_sources">here</a> but here's a
+summary.</p>
+<div class="highlight"><pre><span></span>$ git clone https://github.com/tensorflow/tensorflow.git
+$ <span class="nb">cd</span> tensorflow
+$ git checkout v1.9.0
+$ ./configure
+</pre></div>
+
+
+<p>Configure will ask many questions, it will build faster if you turn off the
+ones you don't need. <code>./configure</code> is a python script, it has nothing to do
+with autoconf. The more important ones to look for are:</p>
+<div class="highlight"><pre><span></span>Do you wish to build TensorFlow with CUDA support? [y/N]: n
+No CUDA support will be enabled for TensorFlow.
+
+Please specify optimization flags to use during compilation when bazel option &quot;--config=opt&quot; is specified [Default is -march=native]: -O3 -march=native
+</pre></div>
+
+
+<p>Turn CUDA off if you don't have a GPU, it takes ages to build. The optimization
+one is where you give it the flags we discussed above. Once its all ready, just
+run:</p>
+<div class="highlight"><pre><span></span>$ bazel build --config<span class="o">=</span>opt <span class="se">\</span>
+//tensorflow/tools/pip_package:build_pip_package <span class="se">\</span>
+//tensorflow:libtensorflow_framework.so <span class="se">\</span>
+//tensorflow:libtensorflow.so
+
+$ bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tf/
+$ pip install /tmp/tf/tensorflow-*.whl
+</pre></div>
+
+
+<p>The <code>--config=opt</code> flag is important otherwise it won't use the optimization
+flags you specified. Alternatively, I've done all the work already on Gentoo so
+just use: <code># emerge tensorflow</code>.</p>
+<p>If you're using GPUs for TensorFlow you may be wondering why bother with all
+this? TensorFlow's gpu packages currently are built for CUDA 9.0, the latest is
+9.2. Nvidia GPUs have "Compute Capabilities" which should ideally match your
+card. Anything lower will work but you may be missing out features. The
+pre-built ones are for "3.5,5.2", you can see what level your card is
+<a href="https://developer.nvidia.com/cuda-gpus">here</a>. Also, not everything can run on
+a GPU, the input pipeline is all on the CPU so especially if you're training
+with lots of fast cards, you'll want the CPU portions to be as optimized as
+possible to keep up. When using the Gentoo package, TF will try to autodetect
+which capabilities your card has. You can set
+<code>TF_CUDA_COMPUTE_CAPABILITIES="6.1"</code> in your make.conf to force a specific
+version.</p>
+<p>The slides from my talk are
+<a href="https://blog.perfinion.com/2018/07/tensorflow-cpu-supports-instructions/files/2018/Tensorflow_2018_Optimizing_Your_Tensorflow.pdf">here</a> and
+unfortunately, it was not recorded. The matmul benchmark is on
+<a href="https://github.com/perfinion/tfbench">Github</a>. I'd be interested to see
+results from running it on other systems too.</p>
+            </div>
+            <!-- /.entry-content -->
+        </article>
+    </section>
+
+        </div>
+        <div class="col-sm-3" id="sidebar">
+            <aside>
+<!-- Sidebar -->
+<section class="well well-sm">
+  <ul class="list-group list-group-flush">
+
+<!-- Sidebar/Social -->
+<li class="list-group-item">
+  <h4><i class="fa fa-home fa-lg"></i><span class="icon-label">Social</span></h4>
+  <ul class="list-group" id="social">
+    <li class="list-group-item"><a href="https://github.com/perfinion/"><i class="fa fa-github-square fa-lg"></i> Github</a></li>
+    <li class="list-group-item"><a href="https://twitter.com/perfinion/"><i class="fa fa-twitter-square fa-lg"></i> Twitter</a></li>
+  </ul>
+</li>
+<!-- End Sidebar/Social -->
+
+<!-- Sidebar/Github -->
+<li class="list-group-item">
+  <h4><i class="fa fa-github fa-lg"></i><span class="icon-label">GitHub Repos</span></h4>
+  <div id="gh_repos">
+    <p class="list-group-item">Status updating...</p>
+  </div>
+  <a href="https://github.com/perfinion">@perfinion</a> on GitHub
+</li>
+<!-- End Sidebar/Github -->
+
+<!-- Sidebar/Links -->
+<li class="list-group-item">
+  <h4><i class="fa fa-external-link-square fa-lg"></i><span class="icon-label">Links</span></h4>
+  <ul class="list-group" id="links">
+    <li class="list-group-item">
+      <a href="https://www.gentoo.org/" target="_blank">Gentoo Linux</a>
+    </li>
+    <li class="list-group-item">
+      <a href="https://wiki.gentoo.org/wiki/SELinux" target="_blank">Gentoo SELinux Wiki</a>
+    </li>
+  </ul>
+</li>
+<!-- End Sidebar/Links -->
+  </ul>
+</section>
+<!-- End Sidebar -->            </aside>
+        </div>
+    </div>
+</div>
+<!-- End Content Container -->
+
+<footer>
+   <div class="container">
+      <hr>
+      <div class="row">
+         <div class="col-xs-10">&copy; 2018 Jason Zaman
+            &middot; Powered by <a href="https://github.com/getpelican/pelican-themes/tree/master/pelican-bootstrap3" target="_blank">pelican-bootstrap3</a>,
+            <a href="http://docs.getpelican.com/" target="_blank">Pelican</a>,
+            <a href="http://getbootstrap.com" target="_blank">Bootstrap</a>         </div>
+         <div class="col-xs-2"><p class="pull-right"><i class="fa fa-arrow-up"></i> <a href="#">Back to top</a></p></div>
+      </div>
+   </div>
+</footer>
+<script src="https://blog.perfinion.com/theme/js/jquery.min.js"></script>
+
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="https://blog.perfinion.com/theme/js/bootstrap.min.js"></script>
+
+<!-- Enable responsive features in IE8 with Respond.js (https://github.com/scottjehl/Respond) -->
+<script src="https://blog.perfinion.com/theme/js/respond.min.js"></script>
+
+
+
+<!-- GitHub JS Code -->
+<script type="text/javascript">
+$(document).ready(function () {
+  if (!window.jXHR) {
+    var jxhr = document.createElement('script');
+    jxhr.type = 'text/javascript';
+    jxhr.src = 'https://blog.perfinion.com/theme/js/jXHR.js';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(jxhr, s);
+  }
+
+  github.showRepos({
+    user: 'perfinion',
+    count: 5,
+    skip_forks: false,
+    target: '#gh_repos'
+  });
+});
+</script>
+<script src="https://blog.perfinion.com/theme/js/github.js" type="text/javascript"></script>
+<!-- End GitHub JS Code -->
+
+
+</body>
+</html>

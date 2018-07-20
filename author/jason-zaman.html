@@ -64,6 +64,24 @@ Perfinion's Blog            </a>
     <div class="row">
         <div class="col-sm-9">
             <article>
+                <h2><a href="https://blog.perfinion.com/2018/07/tensorflow-cpu-supports-instructions/">Tensorflow - Your CPU supports instructions that this binary was not compiled to use</a></h2>
+                <div class="summary"><p>If you've installed TensorFlow from pip, you've probably come across this message:</p>
+tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports
+instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+</pre>
+
+
+<p>Well, I did too and it got me wondering how much of a difference those
+instructions end up making. People often say GPUs are required for any
+non-trivial ML work so I wanted to see if that was really true. I decided to
+delve in and optimize TensorFlow and make it faster on my machine. I gave a
+talk about this yesterday, the slides will be attached at the end as well.</p>
+
+                    <a class="btn btn-default btn-xs" href="https://blog.perfinion.com/2018/07/tensorflow-cpu-supports-instructions/">more ...</a>
+                </div>
+            </article>
+            <hr/>
+            <article>
                 <h2><a href="https://blog.perfinion.com/2018/05/fossasia-2018-selinux-policy-dev/">FOSSASIA 2018 - SELinux Policy Development</a></h2>
                 <div class="summary">A month ago was FOSSASIA 2018 and I got to give another talk about SELinux.
 Last years talk was only about the basics of how things SELinux works and
