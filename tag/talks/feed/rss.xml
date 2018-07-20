@@ -9,7 +9,9 @@ instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
 instructions end up making. People often say GPUs are required for any
 non-trivial ML work so I wanted to see if that was really true. I decided to
 delve in and optimize TensorFlow and make it faster on my machine. I gave a
-talk about this yesterday, the slides will be attached at the end as well.&lt;/p&gt;
+talk about this yesterday at the &lt;a href="https://www.meetup.com/TensorFlow-and-Deep-Learning-Singapore/events/252770537/"&gt;TensorFlow and Deep Learning Meetup in
+Singapore&lt;/a&gt;,
+the slides will be attached at the end as well.&lt;/p&gt;
 </description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Jason Zaman</dc:creator><pubDate>Fri, 20 Jul 2018 12:00:00 +0800</pubDate><guid isPermaLink="false">tag:blog.perfinion.com,2018-07-20:/2018/07/tensorflow-cpu-supports-instructions/</guid><category>talks</category><category>tensorflow</category></item><item><title>FOSSASIA 2018 - SELinux Policy Development</title><link>https://blog.perfinion.com/2018/05/fossasia-2018-selinux-policy-dev/</link><description>A month ago was FOSSASIA 2018 and I got to give another talk about SELinux.
 Last years talk was only about the basics of how things SELinux works and
 labels and allow rules. This year covered more of the policy side of things. I
