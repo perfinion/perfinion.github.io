@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0"><channel><title>Perfinion's Blog</title><link>https://blog.perfinion.com/</link><description></description><lastBuildDate>Fri, 20 Jul 2018 12:00:00 +0800</lastBuildDate><item><title>Tensorflow - Your CPU supports instructions that this binary was not compiled to use</title><link>https://blog.perfinion.com/2018/07/tensorflow-cpu-supports-instructions/</link><description>&lt;p&gt;If you've installed TensorFlow from pip, you've probably come across this message:&lt;/p&gt;
+<rss version="2.0"><channel><title>Perfinion's Blog</title><link>https://blog.perfinion.com/</link><description></description><lastBuildDate>Fri, 04 Jan 2019 00:00:00 +0800</lastBuildDate><item><title>Mobile Machine Learning with Firebase MLKit &amp; TFLite Custom Models</title><link>https://blog.perfinion.com/2019/01/mobile-machine-learning-mlkit-tflite/</link><description>&lt;a href="https://www.gdg-sg.org/2018/12/firebase-summit-extended-2018-singapore.html"&gt;Firebase Summit Extended 2018 Singapore&lt;/a&gt;
+was recently and I gave a talk on Firebase MLKit and TensorFlow Lite. If you've
+not used Firebase before, its a mobile platform by Google to make developing
+Android, iOS and webapps easier and quicker. Originally Firebase was Analytics,
+Admob and a database but has been expanding quite a lot over the last few
+years. One of the new additions to the Firebase family is MLKit. It makes it
+easier to use machine learning features in your app (both Android and iOS)
+without the hassle it might otherwise be.</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Jason Zaman</dc:creator><pubDate>Fri, 04 Jan 2019 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:blog.perfinion.com,2019-01-04:/2019/01/mobile-machine-learning-mlkit-tflite/</guid><category>talks</category><category>firebase</category><category>tensorflow</category></item><item><title>Tensorflow - Your CPU supports instructions that this binary was not compiled to use</title><link>https://blog.perfinion.com/2018/07/tensorflow-cpu-supports-instructions/</link><description>&lt;p&gt;If you've installed TensorFlow from pip, you've probably come across this message:&lt;/p&gt;
 tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports
 instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
 &lt;/pre&gt;

@@ -1,5 +1,148 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Perfinion's Blog - talks</title><link href="https://blog.perfinion.com/" rel="alternate"></link><link href="https://blog.perfinion.com/tag/talks/feed/atom.xml" rel="self"></link><id>https://blog.perfinion.com/</id><updated>2018-07-20T12:00:00+08:00</updated><entry><title>Tensorflow - Your CPU supports instructions that this binary was not compiled to use</title><link href="https://blog.perfinion.com/2018/07/tensorflow-cpu-supports-instructions/" rel="alternate"></link><published>2018-07-20T12:00:00+08:00</published><updated>2018-07-20T12:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2018-07-20:/2018/07/tensorflow-cpu-supports-instructions/</id><summary type="html">&lt;p&gt;If you've installed TensorFlow from pip, you've probably come across this message:&lt;/p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Perfinion's Blog - talks</title><link href="https://blog.perfinion.com/" rel="alternate"></link><link href="https://blog.perfinion.com/tag/talks/feed/atom.xml" rel="self"></link><id>https://blog.perfinion.com/</id><updated>2019-01-04T00:00:00+08:00</updated><entry><title>Mobile Machine Learning with Firebase MLKit &amp; TFLite Custom Models</title><link href="https://blog.perfinion.com/2019/01/mobile-machine-learning-mlkit-tflite/" rel="alternate"></link><published>2019-01-04T00:00:00+08:00</published><updated>2019-01-04T00:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2019-01-04:/2019/01/mobile-machine-learning-mlkit-tflite/</id><summary type="html">&lt;a href="https://www.gdg-sg.org/2018/12/firebase-summit-extended-2018-singapore.html"&gt;Firebase Summit Extended 2018 Singapore&lt;/a&gt;
+was recently and I gave a talk on Firebase MLKit and TensorFlow Lite. If you've
+not used Firebase before, its a mobile platform by Google to make developing
+Android, iOS and webapps easier and quicker. Originally Firebase was Analytics,
+Admob and a database but has been expanding quite a lot over the last few
+years. One of the new additions to the Firebase family is MLKit. It makes it
+easier to use machine learning features in your app (both Android and iOS)
+without the hassle it might otherwise be.</summary><content type="html">&lt;p&gt;&lt;a href="https://www.gdg-sg.org/2018/12/firebase-summit-extended-2018-singapore.html"&gt;Firebase Summit Extended 2018 Singapore&lt;/a&gt;
+was recently and I gave a talk on Firebase MLKit and TensorFlow Lite. If you've
+not used Firebase before, its a mobile platform by Google to make developing
+Android, iOS and webapps easier and quicker. Originally Firebase was Analytics,
+Admob and a database but has been expanding quite a lot over the last few
+years. One of the new additions to the Firebase family is MLKit. It makes it
+easier to use machine learning features in your app (both Android and iOS)
+without the hassle it might otherwise be.&lt;/p&gt;
+&lt;h2&gt;Machine learning&lt;/h2&gt;
+&lt;p&gt;Officially, the definition of machine learning is "a method of data analysis
+that automates analytical model building. It is a branch of artificial
+intelligence based on the idea that systems can learn from data, identify
+patterns and make decisions with minimal human intervention". I'm not sure I
+understand that definition, I think an easier way to understand what ML is, is
+to compare it to traditional programming. In traditional programming, the human
+writes the program and has some data and then uses the computer to get some
+outputs. This could be for example writing a program to detect what fruit is in
+a photo. The programmer might write rules like "if it's round and red then its
+an apple" and "curved shape and yellow coloured is a banana". "round shaped and
+orange coloured is an orange". This pretty quickly becomes really complicated
+when adding more things to detect or more ways to detect them by (how do you
+even tell a computer that something has a curved shape?).&lt;/p&gt;
+&lt;p&gt;Machine learning is basically flipping this around. Instead of writing the
+rules for the program, you give the computer the inputs and the outputs and use
+a lot of compute power and the computer will "learn" how to match the inputs to
+the outputs on its own without the programmer having to write each and every
+rule. The process of training a model requires a lot of processing power and
+some ML expertise to design the model to do well for the task. Luckily Firebase
+already has models for some common tasks and as I'll get to later, there are
+easier ways to re-train a model too.&lt;/p&gt;
+&lt;h2&gt;MLKit&lt;/h2&gt;
+&lt;p&gt;There are a number of &lt;a href="https://firebase.google.com/docs/ml-kit/#what_features_are_available_on_device_or_in_the_cloud"&gt;Ready to use
+models&lt;/a&gt;.
+For most of them there is an on-device and a cloud version of the model. The
+cloud models are bigger and more accurate but slower than the on-device models
+since the data needs to be uploaded to the cloud first. The cloud models are
+also not free. There are a few free calls per month but after that they cost.
+An example of the cloud vs on-device models is the image labelling API,
+on-device is trained on 400 labels and the cloud model has 10,000 and the first
+1000 uses per month are free. Which one to use would depend quite a lot on the
+specific use-case and if the 400 labels are enough.&lt;/p&gt;
+&lt;p&gt;In my talk I demoed the &lt;a href="https://g.co/codelabs/mlkit-android-custom-model"&gt;MLKit Android
+Codelab&lt;/a&gt; and showed the MLKit
+FaceDetection API. There are several modes it can do, the simplest is just find
+the faces. The more complicated modes can detect the contours of the face
+(shape of face, eyes, nose, mouth). It can also return the facial expression
+(smiling, eyes open etc). Detection on device is fast enough to be able to
+detect on the frames of a video.&lt;/p&gt;
+&lt;p&gt;I recommend playing with the codelab, its simple to follow and set up and play
+with. These codelabs are better done on device than in the Android Emulator, I
+was getting initialization errors in the emulator when I tried it.&lt;/p&gt;
+&lt;h2&gt;Custom TensorFlow Lite models&lt;/h2&gt;
+&lt;p&gt;TensorFlow Lite is a stripped down version of regular TensorFlow that is aimed
+at running on mobile devices. It can only be used for inference, training will
+still require big TensorFlow and Lite is a little less flexible but in giving
+up that, you can run TensorFlow Lite on &lt;em&gt;significantly&lt;/em&gt; smaller devices. For a
+comparison, the shared library (not RAM usage, just the lib, RAM will be a lot
+more) full tensorflow on my computer is ~200MB, whereas TFLite is ~2MB.&lt;/p&gt;
+&lt;p&gt;Building and using TFLite from scratch is not &lt;em&gt;too&lt;/em&gt; difficult but Firebase
+MLKit does it all much easier and is cross platform so will work on both
+Android and iOS and automatically takes advantage of any hardware acceleration
+the device has.&lt;/p&gt;
+&lt;p&gt;There is another codelab that covers TFLite called &lt;a href="https://codelabs.developers.google.com/codelabs/tensorflow-for-poets-2-tflite/"&gt;TensorFlow for Poets
+2&lt;/a&gt;.
+It is a simple camera app that detects different kinds of flowers. It's
+important to follow the right codelab, there have been several versions of
+TensorFlow for Poets. The old v1 is long outdated and there are 2 versions of
+v2, one uses TFMobile which is deprecated and will eventually be removed from
+TensorFlow in favour of TFLite. The one to use is v2 tflite that I linked
+above.&lt;/p&gt;
+&lt;h2&gt;Transfer Learning&lt;/h2&gt;
+&lt;p&gt;&lt;img alt="Transfer Learning Inception model" src="https://blog.perfinion.com/2019/01/mobile-machine-learning-mlkit-tflite/files/2019/transfer_learning.png"&gt;&lt;/p&gt;
+&lt;p&gt;Transfer Learning is the thing that makes this codelab so easy. Here is a
+diagram of the Inception architecture that is commonly used for image
+recognition tasks. The lower levels of these networks are quite generic and
+detect generic features of images, and the last few layers take in those
+features and have output neurons for each class. Training the whole network
+would take ages since its pretty big. Luckily, there is a trick that will speed
+things up for us, we can take the pre-trained weights for the model and throw
+away only the last layer and train our own. This "transfering" of weights is
+where the name Transfer Learning comes from. (We'll actually be using the
+MobileNet model but the Inception architecture image was prettier and easier to
+explain.)&lt;/p&gt;
+&lt;p&gt;The flowers in the codelab are fine but what I really wanted to do was try and
+make the &lt;a href="https://www.youtube.com/watch?v=pqTntG1RXSY"&gt;SeeFood app from the TV show Silicon
+Valley&lt;/a&gt;. I did the codelab like
+normal first to make sure everything was working and then went to figure out
+how to make it detect hotdogs vs not hotdogs.&lt;/p&gt;
+&lt;p&gt;To re-train the model we'll need images in two classes: 'hotdog' and 'not
+hotdog'. I found a fantastic kaggle dataset that had already organized a bunch
+of images and sorted them into two folders so grab that from
+&lt;a href="https://www.kaggle.com/dansbecker/hot-dog-not-hot-dog/version/5"&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;When you checkout the repo, there is a &lt;code&gt;tf_files/retrained_labels.txt&lt;/code&gt; file
+which lists the classes that the model will use. Edit that file so it has only
+two lines, one class name on each line. Then put the &lt;code&gt;train&lt;/code&gt; folder from the
+kaggle dataset into &lt;code&gt;tf_files/hotdogs/&lt;/code&gt; so you will end up with
+&lt;code&gt;tf_files/hotdogs/hot_dog/&lt;/code&gt; and &lt;code&gt;tf_files/hotdogs/not_not_dog/&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;To train our new hotdog model run this:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;IMAGE_SIZE&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;224&lt;/span&gt;
+&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;ARCHITECTURE&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;mobilenet_0.50_&lt;/span&gt;&lt;span class="si"&gt;${&lt;/span&gt;&lt;span class="nv"&gt;IMAGE_SIZE&lt;/span&gt;&lt;span class="si"&gt;}&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;&lt;/span&gt;
+&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;STEPS&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;1000&lt;/span&gt;
+
+python -m scripts.retrain &lt;span class="se"&gt;\&lt;/span&gt;
+  --bottleneck_dir&lt;span class="o"&gt;=&lt;/span&gt;tf_files/bottlenecks &lt;span class="se"&gt;\&lt;/span&gt;
+  --how_many_training_steps&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nv"&gt;$STEPS&lt;/span&gt; &lt;span class="se"&gt;\&lt;/span&gt;
+  --train_batch_size&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;500&lt;/span&gt; &lt;span class="se"&gt;\&lt;/span&gt;
+  --model_dir&lt;span class="o"&gt;=&lt;/span&gt;tf_files/models/ &lt;span class="se"&gt;\&lt;/span&gt;
+  --summaries_dir&lt;span class="o"&gt;=&lt;/span&gt;tf_files/training_summaries/&lt;span class="s2"&gt;&amp;quot;&lt;/span&gt;&lt;span class="si"&gt;${&lt;/span&gt;&lt;span class="nv"&gt;ARCHITECTURE&lt;/span&gt;&lt;span class="si"&gt;}&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;&lt;/span&gt; &lt;span class="se"&gt;\&lt;/span&gt;
+  --output_graph&lt;span class="o"&gt;=&lt;/span&gt;tf_files/retrained_graph.pb &lt;span class="se"&gt;\&lt;/span&gt;
+  --output_labels&lt;span class="o"&gt;=&lt;/span&gt;tf_files/retrained_labels.txt &lt;span class="se"&gt;\&lt;/span&gt;
+  --architecture&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;&lt;/span&gt;&lt;span class="si"&gt;${&lt;/span&gt;&lt;span class="nv"&gt;ARCHITECTURE&lt;/span&gt;&lt;span class="si"&gt;}&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;&lt;/span&gt; &lt;span class="se"&gt;\&lt;/span&gt;
+  --image_dir&lt;span class="o"&gt;=&lt;/span&gt;tf_files/hotdogs
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;That will take a few minutes to run and then will output a new
+&lt;code&gt;tf_files/retrained_graph.pb&lt;/code&gt; file which is the trained version of the hotdog
+model. Next we need to convert the protobuf file into TFLite's flatbuffer format by running:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;IMAGE_SIZE&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;224&lt;/span&gt;
+
+tflite_convert &lt;span class="se"&gt;\&lt;/span&gt;
+  --graph_def_file&lt;span class="o"&gt;=&lt;/span&gt;tf_files/retrained_graph.pb &lt;span class="se"&gt;\&lt;/span&gt;
+  --output_file&lt;span class="o"&gt;=&lt;/span&gt;tf_files/optimized_graph.lite &lt;span class="se"&gt;\&lt;/span&gt;
+  --input_format&lt;span class="o"&gt;=&lt;/span&gt;TENSORFLOW_GRAPHDEF &lt;span class="se"&gt;\&lt;/span&gt;
+  --output_format&lt;span class="o"&gt;=&lt;/span&gt;TFLITE &lt;span class="se"&gt;\&lt;/span&gt;
+  --input_shape&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;1&lt;/span&gt;,&lt;span class="si"&gt;${&lt;/span&gt;&lt;span class="nv"&gt;IMAGE_SIZE&lt;/span&gt;&lt;span class="si"&gt;}&lt;/span&gt;,&lt;span class="si"&gt;${&lt;/span&gt;&lt;span class="nv"&gt;IMAGE_SIZE&lt;/span&gt;&lt;span class="si"&gt;}&lt;/span&gt;,3 &lt;span class="se"&gt;\&lt;/span&gt;
+  --input_array&lt;span class="o"&gt;=&lt;/span&gt;input &lt;span class="se"&gt;\&lt;/span&gt;
+  --output_array&lt;span class="o"&gt;=&lt;/span&gt;final_result &lt;span class="se"&gt;\&lt;/span&gt;
+  --inference_type&lt;span class="o"&gt;=&lt;/span&gt;FLOAT &lt;span class="se"&gt;\&lt;/span&gt;
+  --input_data_type&lt;span class="o"&gt;=&lt;/span&gt;FLOAT
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Then just copy the &lt;code&gt;optimized_graph.lite&lt;/code&gt; into the android project and rebuild. Here is a screenshot of the final result :)&lt;/p&gt;
+&lt;p&gt;&lt;img alt="Hotdog not-hotdog screenshot" src="https://blog.perfinion.com/2019/01/mobile-machine-learning-mlkit-tflite/files/2019/hotdog_screenshot.png"&gt;&lt;/p&gt;
+&lt;p&gt;The slides from the presentation are &lt;a href="https://blog.perfinion.com/2019/01/mobile-machine-learning-mlkit-tflite/files/2019/Firebase_MLKit_2019.pdf"&gt;here.&lt;/a&gt;
+Unfortunately there was no video recording of the talk.&lt;/p&gt;</content><category term="talks"></category><category term="firebase"></category><category term="tensorflow"></category></entry><entry><title>Tensorflow - Your CPU supports instructions that this binary was not compiled to use</title><link href="https://blog.perfinion.com/2018/07/tensorflow-cpu-supports-instructions/" rel="alternate"></link><published>2018-07-20T12:00:00+08:00</published><updated>2018-07-20T12:00:00+08:00</updated><author><name>Jason Zaman</name></author><id>tag:blog.perfinion.com,2018-07-20:/2018/07/tensorflow-cpu-supports-instructions/</id><summary type="html">&lt;p&gt;If you've installed TensorFlow from pip, you've probably come across this message:&lt;/p&gt;
 tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports
 instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
 &lt;/pre&gt;

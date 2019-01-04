@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" prefix="og: http://ogp.me/ns# fb: https://www.facebook.com/2008/fbml">
 <head>
-    <title>SELinux desktop profile in Gentoo - Perfinion's Blog</title>
+    <title>TensorFlow - Perfinion's Blog</title>
     <!-- Using the latest rendering mode for IE -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta charset="utf-8">
@@ -9,21 +9,16 @@
 
 
 
-<link rel="canonical" href="https://blog.perfinion.com/2016/09/selinux-desktop-profile/">
 
-        <meta name="author" content="Jason Zaman" />
-        <meta name="keywords" content="security" />
-        <meta name="description" content="SELinux desktop profiles came up on IRC earlier and I thought it might be a good idea to make a post about. Currently in gentoo there are only two selinux profiles:" />
+    <meta name="author" content="Jason Zaman" />
+    <meta name="keywords" content="TensorFlow" />
 
+    <!-- Open Graph tags -->
         <meta property="og:site_name" content="Perfinion's Blog" />
-        <meta property="og:type" content="article"/>
-        <meta property="og:title" content="SELinux desktop profile in Gentoo"/>
-        <meta property="og:url" content="https://blog.perfinion.com/2016/09/selinux-desktop-profile/"/>
-        <meta property="og:description" content="SELinux desktop profiles came up on IRC earlier and I thought it might be a good idea to make a post about. Currently in gentoo there are only two selinux profiles:"/>
-        <meta property="article:published_time" content="2016-09-21" />
-            <meta property="article:section" content="Security" />
-            <meta property="article:tag" content="security" />
-            <meta property="article:author" content="Jason Zaman" />
+        <meta property="og:type" content="website"/>
+        <meta property="og:title" content="Perfinion's Blog"/>
+        <meta property="og:url" content="https://blog.perfinion.com"/>
+        <meta property="og:description" content="Perfinion's Blog"/>
 
 
 
@@ -42,8 +37,8 @@
               title="Perfinion's Blog RSS Feed"/>
 
 
-        <link href="https://blog.perfinion.com/category/security/feed/atom.xml" type="application/atom+xml" rel="alternate"
-              title="Perfinion's Blog Security ATOM Feed"/>
+        <link href="https://blog.perfinion.com/category/tensorflow/feed/atom.xml" type="application/atom+xml" rel="alternate"
+              title="Perfinion's Blog TensorFlow ATOM Feed"/>
 
 </head>
 <body>
@@ -71,85 +66,20 @@ Perfinion's Blog            </a>
 <div class="container">
     <div class="row">
         <div class="col-sm-9">
-    <section id="content">
-        <article>
-            <header class="page-header">
-                <h1>
-                    <a href="https://blog.perfinion.com/2016/09/selinux-desktop-profile/"
-                       rel="bookmark"
-                       title="Permalink to SELinux desktop profile in Gentoo">
-                        SELinux desktop profile in Gentoo
-                    </a>
-                </h1>
-            </header>
-            <div class="entry-content">
-                <div class="panel">
-                    <div class="panel-body">
-<footer class="post-info">
-    <span class="label label-default">Date</span>
-    <span class="published">
-        <i class="fa fa-calendar"></i><time datetime="2016-09-21T12:00:00+08:00"> Wed 21 September 2016</time>
-    </span>
-
-
-
-
-
-<span class="label label-default">Tags</span>
-	<a href="https://blog.perfinion.com/tag/security/">security</a>
-    
-</footer><!-- /.post-info -->                    </div>
+            <article>
+                <h2><a href="https://blog.perfinion.com/2019/01/mobile-machine-learning-mlkit-tflite/">Mobile Machine Learning with Firebase MLKit & TFLite Custom Models</a></h2>
+                <div class="summary"><a href="https://www.gdg-sg.org/2018/12/firebase-summit-extended-2018-singapore.html">Firebase Summit Extended 2018 Singapore</a>
+was recently and I gave a talk on Firebase MLKit and TensorFlow Lite. If you've
+not used Firebase before, its a mobile platform by Google to make developing
+Android, iOS and webapps easier and quicker. Originally Firebase was Analytics,
+Admob and a database but has been expanding quite a lot over the last few
+years. One of the new additions to the Firebase family is MLKit. It makes it
+easier to use machine learning features in your app (both Android and iOS)
+without the hassle it might otherwise be.
+                    <a class="btn btn-default btn-xs" href="https://blog.perfinion.com/2019/01/mobile-machine-learning-mlkit-tflite/">more ...</a>
                 </div>
-                <p>SELinux desktop profiles came up on IRC earlier and I thought it might be a good idea to make a post about.
-Currently in gentoo there are only two selinux profiles:</p>
-<div class="highlight"><pre><span></span>meriadoc ~ # eselect profile list
-Available profile symlink targets:
-  [1]   default/linux/amd64/13.0
-  [2]   default/linux/amd64/13.0/selinux
-  [3]   default/linux/amd64/13.0/desktop
-  [4]   default/linux/amd64/13.0/desktop/gnome
-  [5]   default/linux/amd64/13.0/desktop/gnome/systemd
-  [6]   default/linux/amd64/13.0/desktop/kde
-  [7]   default/linux/amd64/13.0/desktop/kde/systemd
-  [8]   default/linux/amd64/13.0/desktop/plasma
-  [9]   default/linux/amd64/13.0/desktop/plasma/systemd
-  [10]  default/linux/amd64/13.0/developer
-  [11]  default/linux/amd64/13.0/no-multilib
-  [12]  default/linux/amd64/13.0/systemd
-  [13]  default/linux/amd64/13.0/x32
-  [14]  hardened/linux/amd64
-  [15]  hardened/linux/amd64/selinux *
-  [16]  hardened/linux/amd64/no-multilib
-  [17]  hardened/linux/amd64/no-multilib/selinux
-  [18]  hardened/linux/amd64/x32
-  [19]  hardened/linux/musl/amd64
-  [20]  hardened/linux/musl/amd64/x32
-  [21]  default/linux/uclibc/amd64
-  [22]  hardened/linux/uclibc/amd64
-</pre></div>
-
-
-<p>How would one go about having both default/linux/amd64/13.0/desktop and
-selinux? We <em>could</em> add selinux versions of every single other profile but that
-would very quickly get unmanageable. Turns out making a custom one is pretty
-simple:</p>
-<div class="highlight"><pre><span></span>unlink /etc/portage/make.profile
-mkdir /etc/portage/make.profile
-
-<span class="nb">echo</span> <span class="m">6</span> &gt; /etc/portage/make.profile/eapi
-<span class="nb">echo</span> <span class="s2">&quot;gentoo:default/linux/amd64/13.0/desktop&quot;</span> &gt; /etc/portage/make.profile/parent
-<span class="nb">echo</span> <span class="s2">&quot;gentoo:features/selinux&quot;</span> &gt;&gt; /etc/portage/make.profile/parent
-</pre></div>
-
-
-<p>The parent file will tell portage to first use the desktop profile and then use
-the selinux feature on top. It is important that the selinux line comes last
-since it needs to override several things that might be set earlier in the
-desktop profile.</p>
-            </div>
-            <!-- /.entry-content -->
-        </article>
-    </section>
+            </article>
+            <hr/>
 
         </div>
         <div class="col-sm-3" id="sidebar">
